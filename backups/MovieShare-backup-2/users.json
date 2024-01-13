@@ -1,0 +1,10 @@
+{
+  "users": [
+    {"username": "Théo", "password": "theo081008!h"},
+    {"username": "Esra", "password": ""},
+    {"username": "Philippe", "password": ""},
+    {"username": "Pierre", "password": ""},
+    {"username": "Annie", "password": ""},
+    {"username": "admin", "password": "sysadmin_secured"}
+  ]
+}

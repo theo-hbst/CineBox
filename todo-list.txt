@@ -1,0 +1,2 @@
+génération dynamique de stream-selection
+settings - paramètres propres aux utilisateurs en json
