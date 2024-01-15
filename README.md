@@ -29,3 +29,5 @@ Serveur perso pour le streaming et le téléchargement de films et séries
   de npm audit)
 
 - faire les outils de test
+
+- renommer source-sans-pro en fonts et adapter ce changement aux chemins d'accès de la version @latest
