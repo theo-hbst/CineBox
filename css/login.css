@@ -129,3 +129,12 @@ a:hover, a:active {
     color: #868686;
     text-decoration: none;
 }
+
+.error404 {
+    position: absolute;
+    width: 500px;
+    height: auto;
+    left: 50%;
+    top: 70%;
+    transform: translate(-50%, -50%);
+}

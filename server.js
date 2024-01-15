@@ -1,8 +1,16 @@
-const http = require("http");
-const fs = require("fs");
-const path = require("path");
-const os = require("os");
-const url = require("url");
+const express = require('express');
+const fs = require('fs');
+const path = require('path');
+const os = require('os');
+const url = require('url');
+const helmet = require('helmet');
+const cors = require('cors');
+const rateLimit = require('express-rate-limit');
+const Joi = require('joi');
+const ExpressBrute = require('express-brute');
+const cookieParser = require('cookie-parser');
+const csurf = require('csurf');
+
 
 let allowlist;
 try {
@@ -12,41 +20,55 @@ try {
   console.error(err);
 }
 
-const requestCounts = {};
-const requestTimestamps = {};
-const timeframe = 10 * 60 * 1000; // 15 minutes in milliseconds
+const app = express();
 
-const server = http.createServer((req, res) => {
+app.use(cors());
+
+app.use(cookieParser());
+app.use((req, res, next) => {
+  res.cookie('session', '1', { secure: true, httpOnly: true });
+  next();
+});
+
+app.use(csurf({ cookie: true }));
+
+const limiter = rateLimit({
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 1000, // limit each IP to 1000 requests per windowMs
+  handler: function(req, res, /*next*/) {
+    console.log(`Blocked IP due to rate limit: ${req.ip}`); // Log the blocked IP
+    console.log(`A DDoS attack may be in progress from above IP address.`);
+    res.status(429).sendFile(path.join(__dirname, '429.html'));
+  }
+});
+app.use(limiter);
+
+const store = new ExpressBrute.MemoryStore(); // stores state locally, don't use this in production
+const bruteforce = new ExpressBrute(store);
+
+app.post('/auth',
+  bruteforce.prevent, // prevent brute force attacks
+  (req, res, next) => {
+    // validate the input using Joi
+    const schema = Joi.object({
+      username: Joi.string().alphanum().min(3).max(30).required(),
+      password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).required(),
+    });
+    const { error } = schema.validate(req.body);
+    if (error) {
+      res.status(400).send(error.details[0].message);
+      return;
+    }
+  }
+);
+
+app.use((req, res, next) => {
   const clientIp = req.connection.remoteAddress.replace(/^::ffff:/, "");
 
   // Check if the client's IP address is in the allowlist
   if (!allowlist.includes(clientIp)) {
-    res.writeHead(403);
-    res.end("Access denied");
-    return;
-  }
-
-  const now = Date.now();
-  if (!requestTimestamps[clientIp]) {
-    requestTimestamps[clientIp] = now;
-  }
-
-  if (now - requestTimestamps[clientIp] > timeframe) {
-    requestCounts[clientIp] = 0;
-    requestTimestamps[clientIp] = now;
-    console.log(`Server access has been reset for ${clientIp}`);
-  }
-
-  requestCounts[clientIp] = (requestCounts[clientIp] || 0) + 1;
-
-  if (requestCounts[clientIp] > 300) {
-    res.writeHead(429, { "Content-Type": "text/plain" });
-    res.end("Too many requests were sent to this server and it was stopped");
-    console.log(`DDoS Attack detected! Too many requests from ${clientIp}`);
-    console.log(`Attacked ip has been shut down.`);
-    console.log(
-      `This blocked ip will reset in 10 minutes, but other ips are available. Please check the ip list given at startup.`,
-    );
+    console.log(`Rejected IP: ${clientIp}`); // Log the blocked IP 
+    res.status(403).send("Access denied");
     return;
   }
 
@@ -80,7 +102,7 @@ const server = http.createServer((req, res) => {
 });
 
 const port = 8080; // Change this to your preferred port
-server.listen(port, () => {
+app.listen(port, () => {
   console.log(`Server is running on the following addresses:`);
 
   const networkInterfaces = os.networkInterfaces();
