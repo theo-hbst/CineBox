@@ -27,3 +27,5 @@ Serveur perso pour le streaming et le téléchargement de films et séries
 
 - ajouter + de sécurité (a réfléchir a des packages, à des fixs et surtout aux avertissements
   de npm audit)
+
+- faire les outils de test
