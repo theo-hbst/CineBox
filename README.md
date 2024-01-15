@@ -1,4 +1,5 @@
 # MovieShare
+<<<<<<< HEAD
 Serveur perso pour le streaming et le téléchargement de films et séries
 
 ## Todo-list
