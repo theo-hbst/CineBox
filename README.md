@@ -1,16 +1,15 @@
 # MovieShare
-<<<<<<< HEAD
 Serveur perso pour le streaming et le téléchargement de films et séries
 
 ## Todo-list
 
-- génération dynamique de stream-selection et series:   - films: détecter tous les films a
-                                                          la racine
-                                                      
-                                                        - séries: détecter tous les fichiers video
-                                                          dans un dossier clickable (src exclu)
+- génération dynamique de stream-selection et series
 
-                                                            -> afficher les épisodes avec la même ui que les films
+- films: détecter tous les films a la racine
+                                                      
+- séries: détecter tous les fichiers video dans un dossier clickable (src exclu)
+
+- afficher les épisodes avec la même ui que les films
 
 - settings - paramètres propres aux utilisateurs en json
 
