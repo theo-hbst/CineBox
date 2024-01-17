@@ -13,21 +13,6 @@ Serveur perso pour le streaming et le téléchargement de films et séries
 
 - settings - paramètres propres aux utilisateurs en json
 
-- bien faire le 404 (image)
-
-- faire le 429 (image + timer live)
-
 - régler le ban d'ip pour le client et pas l'ip d'un des serveurs
 
-- faire le redirect pour empecher l'utilisation du retour en arrière ou de l'historique
-  si déconnecté (problème de cache car la page reste chargée en arrière plan et ne se reload
-  pas au retour)
-
-- port custom (a réfléchir a un port pas utilisé couramment)
-
-- ajouter + de sécurité (a réfléchir a des packages, à des fixs et surtout aux avertissements
-  de npm audit)
-
-- faire les outils de test
-
-- renommer source-sans-pro en fonts et adapter ce changement aux chemins d'accès de la version @latest
+- ajouter + de sécurité (a réfléchir a des packages sans bugs et vulnérabilités)

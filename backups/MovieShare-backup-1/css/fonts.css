@@ -2,25 +2,25 @@
   font-family: 'Source Sans Pro';
   font-style: normal;
   font-weight: 300;
-  src: local('Source Sans Pro Light'), local('SourceSansPro-Light'), url(../source-sans-pro/SourceSansPro-Light.ttf) format('truetype');
+  src: local('Source Sans Pro Light'), local('SourceSansPro-Light'), url(../source-sans-proSourceSansPro-Light.ttf) format('truetype');
 }
 @font-face {
   font-family: 'Source Sans Pro';
   font-style: normal;
   font-weight: 400;
-  src: local('Source Sans Pro'), local('SourceSansPro-Regular'), url(../source-sans-pro/SourceSansPro-Regular.ttf) format('truetype');
+  src: local('Source Sans Pro'), local('SourceSansPro-Regular'), url(../source-sans-proSourceSansPro-Regular.ttf) format('truetype');
 }
 @font-face {
   font-family: 'Source Sans Pro';
   font-style: normal;
   font-weight: 600;
-  src: local('Source Sans Pro Bold'), local('SourceSansPro-Bold'), url(../source-sans-pro/SourceSansPro-SemiBold.ttf) format('truetype');
+  src: local('Source Sans Pro Bold'), local('SourceSansPro-Bold'), url(../source-sans-proSourceSansPro-SemiBold.ttf) format('truetype');
 }
 @font-face {
   font-family: 'Source Sans Pro';
   font-style: normal;
   font-weight: 700;
-  src: local('Source Sans Pro Bold'), local('SourceSansPro-Bold'), url(../source-sans-pro/SourceSansPro-Bold.ttf) format('truetype');
+  src: local('Source Sans Pro Bold'), local('SourceSansPro-Bold'), url(../source-sans-proSourceSansPro-Bold.ttf) format('truetype');
 }
 
 /* Additional font types for frontend styling */

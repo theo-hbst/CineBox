@@ -3,13 +3,17 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const url = require('url');
-const helmet = require('helmet');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const Joi = require('joi');
 const ExpressBrute = require('express-brute');
 const cookieParser = require('cookie-parser');
 const csurf = require('csurf');
+const http = require('http');
+const socketIo = require('socket.io');
+const app = express();
+const server = http.createServer(app);
+const io = socketIo(server);
 
 
 let allowlist;
@@ -19,8 +23,6 @@ try {
 } catch (err) {
   console.error(err);
 }
-
-const app = express();
 
 app.use(cors());
 
@@ -101,7 +103,7 @@ app.use((req, res, next) => {
   });
 });
 
-const port = 8080; // Change this to your preferred port
+const port = 2048; // Change this to your preferred port
 app.listen(port, () => {
   console.log(`Server is running on the following addresses:`);
 

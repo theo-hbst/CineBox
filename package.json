@@ -17,7 +17,11 @@
     "joi": "^17.11.0",
     "node-openvpn": "^0.1.1",
     "os": "^0.1.2",
+    "socker.io": "^0.0.0-alpha-beta",
+    "socket.io": "^4.7.4",
     "torrent-stream": "^1.2.1",
-    "webtorrent": "^2.1.32"
+    "underscore": "^1.13.6",
+    "webtorrent": "^2.1.32",
+    "ws": "^8.16.0"
   }
 }
