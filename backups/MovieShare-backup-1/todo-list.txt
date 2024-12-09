@@ -1,2 +1,0 @@
-génération dynamique de stream-selection et file-manager
-settings - paramètres propres aux utilisateurs en json + bouton dark mode

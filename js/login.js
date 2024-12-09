@@ -15,7 +15,7 @@ $(document).ready(function () {
 
             if (userFound) {
                 localStorage.setItem('username', username);
-                window.location.href = 'home.html';
+                window.location.href = 'pages/home.html';
             } else {
                 $('input[type=password]').addClass('error');
                 setTimeout(function () {

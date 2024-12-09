@@ -3,8 +3,6 @@ Serveur perso pour le streaming et le téléchargement de films et séries
 
 ## Todo-list
 
-- génération dynamique de stream-selection et series
-
 - films: détecter tous les films a la racine
                                                       
 - séries: détecter tous les fichiers video dans un dossier clickable (src exclu)
@@ -15,4 +13,8 @@ Serveur perso pour le streaming et le téléchargement de films et séries
 
 - régler le ban d'ip pour le client et pas l'ip d'un des serveurs
 
-- ajouter + de sécurité (a réfléchir a des packages sans bugs et vulnérabilités)
+- téléchargements torrents(upload)/magnets(liens)
+
+- redirect.js au début de chaque page
+
+- régler allowlist non-fonctionnelle

@@ -131,10 +131,9 @@ a:hover, a:active {
 }
 
 .error404 {
-    position: absolute;
-    width: 500px;
-    height: auto;
-    left: 50%;
-    top: 70%;
-    transform: translate(-50%, -50%);
+    padding-top: 6px;
+}
+
+.error429 {
+    padding-top: 6px;
 }
