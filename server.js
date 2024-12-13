@@ -11,6 +11,7 @@ const cookieParser = require('cookie-parser');
 const csurf = require('csurf');
 const http = require('http');
 const socketIo = require('socket.io');
+
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
@@ -65,7 +66,7 @@ app.post('/auth',
 );
 
 app.use((req, res, next) => {
-  const clientIp = req.connection.remoteAddress.replace(/^::ffff:/, "");
+  const clientIp = req.socket.remoteAddress.replace(/^::ffff:/, "");
 
   // Check if the client's IP address is in the allowlist
   if (!allowlist.includes(clientIp)) {

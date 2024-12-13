@@ -1,10 +1,4 @@
 {
-  "devDependencies": {
-    "tailwindcss": "^3.0.23"
-  },
-  "scripts": {
-    "build": "npx tailwindcss -i ./css/tailwind.css -o ./css/style.css --watch"
-  },
   "dependencies": {
     "axios": "^1.6.5",
     "cookie-parser": "^1.4.6",
@@ -19,9 +13,7 @@
     "os": "^0.1.2",
     "socker.io": "^0.0.0-alpha-beta",
     "socket.io": "^4.7.4",
-    "torrent-stream": "^1.2.1",
     "underscore": "^1.13.6",
-    "webtorrent": "^2.1.32",
     "ws": "^8.16.0"
   }
 }
