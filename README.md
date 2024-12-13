@@ -17,4 +17,4 @@ Serveur perso pour le streaming et le téléchargement de films et séries
 
 - redirect.js au début de chaque page
 
-- régler allowlist non-fonctionnelle
+- régler css page 429

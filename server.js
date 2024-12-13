@@ -2,7 +2,6 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const url = require('url');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const Joi = require('joi');
@@ -11,11 +10,26 @@ const cookieParser = require('cookie-parser');
 const csurf = require('csurf');
 const http = require('http');
 const socketIo = require('socket.io');
+const yargs = require('yargs/yargs');
+const { hideBin } = require('yargs/helpers');
 
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
+const argv = yargs(hideBin(process.argv))
+  .option('port', {
+    alias: 'p',
+    type: 'number',
+    description: 'Port to run the server on',
+    default: 2048
+  })
+  .option('debug', {
+    type: 'boolean',
+    description: 'Enable debug mode',
+    default: false
+  })
+  .argv;
 
 let allowlist;
 try {
@@ -26,7 +40,7 @@ try {
 }
 
 app.use(cors());
-
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(cookieParser());
 app.use((req, res, next) => {
   res.cookie('session', '1', { secure: true, httpOnly: true });
@@ -40,8 +54,7 @@ const limiter = rateLimit({
   max: 1000, // limit each IP to 1000 requests per windowMs
   handler: function(req, res, /*next*/) {
     console.log(`Blocked IP due to rate limit: ${req.ip}`); // Log the blocked IP
-    console.log(`A DDoS attack may be in progress from above IP address.`);
-    res.status(429).sendFile(path.join(__dirname, '429.html'));
+    res.status(429).sendFile(path.join(__dirname, 'pages/errors/429.html'));
   }
 });
 app.use(limiter);
@@ -62,6 +75,7 @@ app.post('/auth',
       res.status(400).send(error.details[0].message);
       return;
     }
+    next();
   }
 );
 
@@ -71,10 +85,16 @@ app.use((req, res, next) => {
   // Check if the client's IP address is in the allowlist
   if (!allowlist.includes(clientIp)) {
     console.log(`Rejected IP: ${clientIp}`); // Log the blocked IP 
-    res.status(403).send("Access denied");
-    return;
+    fs.readFile(path.join(__dirname, "pages/errors/403.html"), (error, content) => {
+      res.writeHead(403, { "Content-Type": "text/html; charset=UTF-8" });
+      res.end(content, "utf-8");
+    });
+    return; // Ensure the middleware chain is stopped
   }
+  next();
+});
 
+app.use((req, res) => {
   let filePath = path.join(__dirname, req.url === "/" ? "index.html" : req.url);
   let extname = String(path.extname(filePath)).toLowerCase();
   let contentType = "text/html";
@@ -93,10 +113,15 @@ app.use((req, res, next) => {
 
   fs.readFile(filePath, (error, content) => {
     if (error) {
-      fs.readFile(path.join(__dirname, "404.html"), (error, content) => {
-        res.writeHead(404, { "Content-Type": contentType });
-        res.end(content, "utf-8");
-      });
+      if (error.code === 'ENOENT') {
+        fs.readFile(path.join(__dirname, "pages/errors/404.html"), (error, content) => {
+          res.writeHead(404, { "Content-Type": "text/html" });
+          res.end(content, "utf-8");
+        });
+      } else {
+        res.writeHead(500);
+        res.end(`Server Error: ${error.code}`);
+      }
     } else {
       res.writeHead(200, { "Content-Type": contentType });
       res.end(content, "utf-8");
@@ -104,8 +129,8 @@ app.use((req, res, next) => {
   });
 });
 
-const port = 2048; // Change this to your preferred port
-app.listen(port, () => {
+const port = argv.port; // Change this to your preferred port
+server.listen(port, () => {
   console.log(`Server is running on the following addresses:`);
 
   const networkInterfaces = os.networkInterfaces();
@@ -114,11 +139,13 @@ app.listen(port, () => {
       // Skip over non-IPv4 addresses
       if (net.family === "IPv4") {
         console.log(`http://${net.address}:${port}`);
-        // Add the server's IP to the allowlist
-        if (!allowlist.includes(net.address)) {
+        if (!argv.debug && !allowlist.includes(net.address)) {
           allowlist.push(net.address);
         }
       }
     }
+  }
+  if (argv.debug) {
+    console.log('Debug mode is enabled (ALLOWLIST TEST). Allowlist:', allowlist);
   }
 });

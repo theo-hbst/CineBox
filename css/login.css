@@ -137,3 +137,7 @@ a:hover, a:active {
 .error429 {
     padding-top: 6px;
 }
+
+.error403 {
+    padding-top: 6px;
+}

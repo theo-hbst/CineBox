@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="initial-scale=1">
+    <title>Serveur indisponible</title>
+    <link rel="shortcut icon" href="../../error.png">
+    <link rel="apple-touch-icon" href="../../error.png">
+    <style>
+        @font-face {
+            font-family: 'Source Sans Pro';
+            font-style: normal;
+            font-weight: 300;
+            src: local('Source Sans Pro Light'), local('SourceSansPro-Light'), url(../fonts/SourceSansPro-Light.ttf) format('truetype');
+        }
+        @font-face {
+            font-family: 'Source Sans Pro';
+            font-style: normal;
+            font-weight: 400;
+            src: local('Source Sans Pro'), local('SourceSansPro-Regular'), url(../fonts/SourceSansPro-Regular.ttf) format('truetype');
+        }
+        @font-face {
+            font-family: 'Source Sans Pro';
+            font-style: normal;
+            font-weight: 700;
+            src: local('Source Sans Pro Bold'), local('SourceSansPro-Bold'), url(../fonts/SourceSansPro-Bold.ttf) format('truetype');
+        }
+        @font-face {
+            font-family: 'Source Sans Pro';
+            font-style: italic;
+            font-weight: 200;
+            src: local('Source Sans Pro ExtraLight Italic'), local('SourceSansPro-ExtraLightIt'), url(../fonts/SourceSansPro-ExtraLightItalic.ttf) format('truetype');
+        }
+        @font-face {
+            font-family: 'Source Sans Pro';
+            font-style: italic;
+            font-weight: 400;
+            src: local('Source Sans Pro Italic'), local('SourceSansPro-It'), url(../fonts/SourceSansPro-Italic.ttf) format('truetype');
+        }
+        @font-face {
+            font-family: 'Source Sans Pro';
+            font-style: italic;
+            font-weight: 900;
+            src: local('Source Sans Pro Black Italic'), local('SourceSansPro-BlackIt'), url(../fonts/SourceSansPro-BlackItalic.ttf) format('truetype');
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+        }
+
+        body {
+            background: url(../imgs/landscape.jpg) no-repeat center;
+            background-size: cover;
+        }
+
+        * {
+            font-family: 'Source Sans Pro', helvetica, arial, 'sans-serif';
+        }
+
+        #page {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 300px;
+            height: 120px;
+            margin: -10px 0 0 -150px;
+            padding: 0;
+        }
+
+        h1,
+        p {
+            position: absolute;
+            width: 300px;
+            text-align: left;
+            left: 50%;
+            top: 50%;
+            margin: -140px 0 0 -150px;
+            padding: 0;
+        }
+
+        h1 {
+            font-weight: 300;
+            font-size: 45px;
+        }
+
+        p {
+            font-weight: 700;
+            font-size: 16px;
+            margin-top: -80px;
+        }
+
+        .error404 {
+            padding-top: 6px;
+        }
+
+        .error429 {
+            padding-top: 6px;
+        }
+
+        .error403 {
+            padding-top: 6px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Désolé.</h1>
+    <p>Ce serveur est temporairement indisponible. Veuillez réessayer dans 5 minutes.</p>
+    <p class="error429"><strong><br><br><br>ERR-429</strong></p>
+</body>
+</html>
