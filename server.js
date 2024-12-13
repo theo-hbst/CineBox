@@ -7,13 +7,14 @@ const rateLimit = require('express-rate-limit');
 const Joi = require('joi');
 const ExpressBrute = require('express-brute');
 const cookieParser = require('cookie-parser');
-const csurf = require('csurf');
 const http = require('http');
 const socketIo = require('socket.io');
 const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
 const { all } = require('axios');
 const helmet = require('helmet');
+const { spawn } = require('child_process');
+const colors = require('colors'); // Ajout de colors
 
 const version = '1.2.0';
 
@@ -53,7 +54,7 @@ try {
   const data = fs.readFileSync("allowlist.json");
   allowlist = JSON.parse(data).allowedIPs;
 } catch (err) {
-  console.error(err);
+  console.error(colors.magenta(err));
 }
 
 app.use(cors());
@@ -64,13 +65,13 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(csurf({ cookie: true }));
+// app.use(csurf({ cookie: true }));
 
 const limiter = rateLimit({
   windowMs: 5 * 60 * 1000, // 5 minutes
   max: 1000, // limit each IP to 1000 requests per windowMs
   handler: function(req, res, /*next*/) {
-    console.log(`Blocked IP due to rate limit: ${req.ip}`); // Log the blocked IP
+    console.log(colors.red(`Blocked IP due to rate limit: ${req.ip}`)); // Log the blocked IP
     res.status(429).sendFile(path.join(__dirname, 'pages/errors/429.html'));
   }
 });
@@ -96,12 +97,49 @@ app.post('/auth',
   }
 );
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.post('/submit_form', (req, res) => {
+  const option = req.body.option;
+  const textInput = req.body.text_input;
+
+  console.log(colors.green(`Option: ${option}`));
+  console.log(colors.green(`Text Input: ${textInput}`));
+
+  const pythonProcess = spawn('python', ['handle_form.py', option, textInput]);
+
+  console.log(colors.yellow('Python engine started'));
+  
+  pythonProcess.stdout.on('data', (data) => {
+    console.log(colors.yellow(`stdout: ${data}`));
+  });
+
+  pythonProcess.stderr.on('data', (data) => {
+    console.error(colors.red(`stderr: ${data}`));
+  });
+
+  pythonProcess.on('close', (code) => {
+    console.log(colors.yellow(`child process exited with code ${code}`));
+    console.log(colors.green('Form data processed successfully'));
+    res.status(200).send('Form data processed successfully');
+  });
+});
+
+app.get('/form', (req, res) => {
+  res.sendFile(path.join(__dirname, 'pages/content/form.html'));
+});
+
+app.get('/csrf-token', (req, res) => {
+  res.json({ csrfToken: req.csrfToken() });
+});
+
 app.use((req, res, next) => {
   const clientIp = req.socket.remoteAddress.replace(/^::ffff:/, "");
 
   // Check if the client's IP address is in the allowlist
   if (argv.allowlist && !allowlist.includes(clientIp)) {
-    console.log(`Rejected IP: ${clientIp}`); // Log the blocked IP 
+    console.log(colors.red(`Rejected IP: ${clientIp}`)); // Log the blocked IP 
     fs.readFile(path.join(__dirname, "pages/errors/403.html"), (error, content) => {
       res.writeHead(403, { "Content-Type": "text/html; charset=UTF-8" });
       res.end(content, "utf-8");
@@ -136,6 +174,7 @@ app.use((req, res) => {
           res.end(content, "utf-8");
         });
       } else {
+        console.error(colors.magenta(`Server Error: ${error.code}`));
         res.writeHead(500);
         res.end(`Server Error: ${error.code}`);
       }
@@ -148,19 +187,19 @@ app.use((req, res) => {
 
 const port = argv.port; // Change this to your preferred port
 server.listen(port, () => {
-  console.log(`Server is running on the following addresses:`);
+  console.log(colors.yellow(`Server is running on the following addresses:`));
 
   const networkInterfaces = os.networkInterfaces();
   for (const name of Object.keys(networkInterfaces)) {
     for (const net of networkInterfaces[name]) {
       // Skip over non-IPv4 addresses
       if (net.family === "IPv4") {
-        console.log(`http://${net.address}:${port}`);
+        console.log(colors.green(`http://${net.address}:${port}`));
         if (!argv.localhost && !allowlist.includes(net.address)) {
           allowlist.push(net.address);
         }
       }
     }
   }
-  console.log('Allowlist enabled:', allowlist);
+  console.log(colors.green('Allowlist enabled:'), colors.green(allowlist));
 });
