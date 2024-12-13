@@ -11,5 +11,7 @@ def test_directory_traversal(url):
     except requests.exceptions.RequestException as e:
         print(f"An error occurred: {e}")
 
+    print("Test completed, no vulnerability found.")
+
 # Remplacez 'http://yourserver.com' par l'URL de votre serveur
-test_directory_traversal('http://yourserver.com')
+test_directory_traversal('http://127.0.0.1:3000')

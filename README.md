@@ -16,5 +16,3 @@ Serveur perso pour le streaming et le téléchargement de films et séries
 - téléchargements torrents(upload)/magnets(liens)
 
 - redirect.js au début de chaque page
-
-- régler allowlist

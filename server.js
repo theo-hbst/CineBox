@@ -12,23 +12,39 @@ const http = require('http');
 const socketIo = require('socket.io');
 const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
+const { all } = require('axios');
+const helmet = require('helmet');
+
+const version = '1.2.0';
 
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
+
+app.use(helmet());
 
 const argv = yargs(hideBin(process.argv))
   .option('port', {
     alias: 'p',
     type: 'number',
     description: 'Port to run the server on',
-    default: 2048
+    default: 8080
+  })
+  .option('localhost', {
+    type: 'boolean',
+    alias: 'l',
+    description: 'Run the server on localhost only',
   })
   .option('allowlist', {
     type: 'boolean',
-    alias: "a",
+    alias: 'a',
     description: 'Enable allowlist',
-    default: false
+  })
+  .version(version)
+  .alias('version', 'v')
+  .option('help', {
+    alias: 'h',
+    description: 'Display this usage guide.'
   })
   .argv;
 
@@ -84,13 +100,13 @@ app.use((req, res, next) => {
   const clientIp = req.socket.remoteAddress.replace(/^::ffff:/, "");
 
   // Check if the client's IP address is in the allowlist
-  if (!allowlist.includes(clientIp)) {
+  if (argv.allowlist && !allowlist.includes(clientIp)) {
     console.log(`Rejected IP: ${clientIp}`); // Log the blocked IP 
     fs.readFile(path.join(__dirname, "pages/errors/403.html"), (error, content) => {
       res.writeHead(403, { "Content-Type": "text/html; charset=UTF-8" });
       res.end(content, "utf-8");
     });
-    return; // Ensure the middleware chain is stopped
+    return;
   }
   next();
 });
@@ -140,7 +156,7 @@ server.listen(port, () => {
       // Skip over non-IPv4 addresses
       if (net.family === "IPv4") {
         console.log(`http://${net.address}:${port}`);
-        if (!argv.allowlist_arg && !allowlist.includes(net.address)) {
+        if (!argv.localhost && !allowlist.includes(net.address)) {
           allowlist.push(net.address);
         }
       }
