@@ -24,9 +24,10 @@ const argv = yargs(hideBin(process.argv))
     description: 'Port to run the server on',
     default: 2048
   })
-  .option('debug', {
+  .option('allowlist', {
     type: 'boolean',
-    description: 'Enable debug mode',
+    alias: "a",
+    description: 'Enable allowlist',
     default: false
   })
   .argv;
@@ -139,13 +140,11 @@ server.listen(port, () => {
       // Skip over non-IPv4 addresses
       if (net.family === "IPv4") {
         console.log(`http://${net.address}:${port}`);
-        if (!argv.debug && !allowlist.includes(net.address)) {
+        if (!argv.allowlist_arg && !allowlist.includes(net.address)) {
           allowlist.push(net.address);
         }
       }
     }
   }
-  if (argv.debug) {
-    console.log('Debug mode is enabled (ALLOWLIST TEST). Allowlist:', allowlist);
-  }
+  console.log('Allowlist enabled:', allowlist);
 });
