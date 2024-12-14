@@ -3,14 +3,14 @@ Serveur perso pour le streaming et le téléchargement de films et séries
 
 ## Todo-list
 
-- settings - paramètres propres aux utilisateurs en json
+- UI avec les différentes pages
 
-- régler le ban d'ip pour le client et pas l'ip d'un des serveurs
+- Partie fonctionnelle
+
+- settings - paramètres propres aux utilisateurs en json
 
 - redirect.js au début de chaque page
 
 - gérer le téléchargement de torrents/magnets (partie récupération magnet dans fichier .py fonctionnelle)
 
-- gérer css + image dans les pages d'erreur 403 et 429
-
-- ajouter console interractive pendant l'execution du serveur
+- gérer css + image dans la page d'erreur 403

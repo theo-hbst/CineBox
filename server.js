@@ -11,18 +11,15 @@ const http = require('http');
 const socketIo = require('socket.io');
 const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
-const { all } = require('axios');
-const helmet = require('helmet');
 const { spawn } = require('child_process');
-const colors = require('colors'); // Ajout de colors
+const colors = require('colors');
+const readline = require('readline');
 
 const version = '1.2.0';
 
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
-
-app.use(helmet());
 
 const argv = yargs(hideBin(process.argv))
   .option('port', {
@@ -31,15 +28,14 @@ const argv = yargs(hideBin(process.argv))
     description: 'Port to run the server on',
     default: 8080
   })
-  .option('localhost', {
-    type: 'boolean',
-    alias: 'l',
-    description: 'Run the server on localhost only',
-  })
   .option('allowlist', {
     type: 'boolean',
     alias: 'a',
     description: 'Enable allowlist',
+  })
+  .option('debug-append', {
+    type: 'boolean',
+    description: 'Do not append server IPs to allowlist',
   })
   .version(version)
   .alias('version', 'v')
@@ -49,12 +45,14 @@ const argv = yargs(hideBin(process.argv))
   })
   .argv;
 
-let allowlist;
-try {
-  const data = fs.readFileSync("allowlist.json");
-  allowlist = JSON.parse(data).allowedIPs;
-} catch (err) {
-  console.error(colors.magenta(err));
+let allowlist = [];
+if (argv.allowlist) {
+  try {
+    const data = fs.readFileSync("allowlist.json");
+    allowlist = JSON.parse(data).allowedIPs;
+  } catch (err) {
+    console.error(colors.magenta(err));
+  }
 }
 
 app.use(cors());
@@ -72,7 +70,7 @@ const limiter = rateLimit({
   max: 1000, // limit each IP to 1000 requests per windowMs
   handler: function(req, res, /*next*/) {
     console.log(colors.red(`Blocked IP due to rate limit: ${req.ip}`)); // Log the blocked IP
-    res.status(429).sendFile(path.join(__dirname, 'pages/errors/429.html'));
+    res.status(429).sendFile(path.join(__dirname, 'public/pages/errors/429.html'));
   }
 });
 app.use(limiter);
@@ -127,7 +125,7 @@ app.post('/submit_form', (req, res) => {
 });
 
 app.get('/form', (req, res) => {
-  res.sendFile(path.join(__dirname, 'pages/content/form.html'));
+  res.sendFile(path.join(__dirname, 'public/pages/content/form.html'));
 });
 
 app.get('/csrf-token', (req, res) => {
@@ -135,15 +133,12 @@ app.get('/csrf-token', (req, res) => {
 });
 
 app.use((req, res, next) => {
-  const clientIp = req.socket.remoteAddress.replace(/^::ffff:/, "");
+  const clientIp = req.socket && req.socket.remoteAddress ? req.socket.remoteAddress.replace(/^::ffff:/, "") : null;
 
   // Check if the client's IP address is in the allowlist
-  if (argv.allowlist && !allowlist.includes(clientIp)) {
+  if (argv.allowlist && clientIp && !allowlist.includes(clientIp)) {
     console.log(colors.red(`Rejected IP: ${clientIp}`)); // Log the blocked IP 
-    fs.readFile(path.join(__dirname, "pages/errors/403.html"), (error, content) => {
-      res.writeHead(403, { "Content-Type": "text/html; charset=UTF-8" });
-      res.end(content, "utf-8");
-    });
+    res.sendFile(path.join(__dirname, "public/pages/errors/403.html"));
     return;
   }
   next();
@@ -169,7 +164,7 @@ app.use((req, res) => {
   fs.readFile(filePath, (error, content) => {
     if (error) {
       if (error.code === 'ENOENT') {
-        fs.readFile(path.join(__dirname, "pages/errors/404.html"), (error, content) => {
+        fs.readFile(path.join(__dirname, "public/pages/errors/404.html"), (error, content) => {
           res.writeHead(404, { "Content-Type": "text/html" });
           res.end(content, "utf-8");
         });
@@ -195,11 +190,58 @@ server.listen(port, () => {
       // Skip over non-IPv4 addresses
       if (net.family === "IPv4") {
         console.log(colors.green(`http://${net.address}:${port}`));
-        if (!argv.localhost && !allowlist.includes(net.address)) {
+        if (!argv['debug-append'] && !allowlist.includes(net.address)) {
           allowlist.push(net.address);
         }
       }
     }
   }
-  console.log(colors.green('Allowlist enabled:'), colors.green(allowlist));
+
+  if (!argv['debug-append']) {
+    fs.writeFileSync('allowlist.json', JSON.stringify({ allowedIPs: allowlist }, null, 2));
+  }
+});
+
+// Command line interface for server control
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+  prompt: '>>> '
+});
+
+rl.prompt();
+
+rl.on('line', (input) => {
+  switch (input.trim()) {
+    case 'stop':
+      console.log(colors.red('Stopping server...'));
+      server.close(() => {
+        console.log(colors.red('Server stopped.'));
+        process.exit(0);
+      });
+      break;
+    case 'restart':
+      console.log(colors.yellow('Restarting server...'));
+      server.close(() => {
+        console.log(colors.yellow('Server stopped.'));
+        const nodeProcess = spawn('node', [process.argv[1], ...process.argv.slice(2)], {
+          stdio: 'inherit'
+        });
+        nodeProcess.on('close', (code) => {
+          console.log(colors.red(`Node process exited with code ${code}`));
+          process.exit(code);
+        });
+      });
+      break;
+    case 'refresh':
+      console.log(colors.blue('Refreshing blocked IPs...'));
+      // Logic to refresh blocked IPs (reset their request count)
+      limiter.resetKey('*');
+      console.log(colors.blue('Blocked IPs refreshed.'));
+      break;
+    default:
+      console.log(colors.red(`Unknown command: ${input}`));
+      break;
+  }
+  rl.prompt();
 });
