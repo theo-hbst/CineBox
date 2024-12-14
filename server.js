@@ -37,6 +37,10 @@ const argv = yargs(hideBin(process.argv))
     type: 'boolean',
     description: 'Do not append server IPs to allowlist',
   })
+  .option('persist-append', {
+    type: 'boolean',
+    description: 'Persist appended server IPs to allowlist file',
+  })
   .version(version)
   .alias('version', 'v')
   .option('help', {
@@ -197,9 +201,10 @@ server.listen(port, () => {
     }
   }
 
-  if (!argv['debug-append']) {
+  if (!argv['debug-append'] && argv['persist-append']) {
     fs.writeFileSync('allowlist.json', JSON.stringify({ allowedIPs: allowlist }, null, 2));
   }
+  rl.prompt();
 });
 
 // Command line interface for server control
@@ -212,7 +217,9 @@ const rl = readline.createInterface({
 rl.prompt();
 
 rl.on('line', (input) => {
-  switch (input.trim()) {
+  const [command, ip] = input.trim().split(' ');
+
+  switch (command) {
     case 'stop':
       console.log(colors.red('Stopping server...'));
       server.close(() => {
@@ -236,8 +243,36 @@ rl.on('line', (input) => {
     case 'refresh':
       console.log(colors.blue('Refreshing blocked IPs...'));
       // Logic to refresh blocked IPs (reset their request count)
-      limiter.resetKey('*');
+      // limiter.resetKey('*');
       console.log(colors.blue('Blocked IPs refreshed.'));
+      break;
+    case 'append':
+      if (ip) {
+        if (!allowlist.includes(ip)) {
+          allowlist.push(ip);
+          if (argv['persist-append']) {
+            fs.writeFileSync('allowlist.json', JSON.stringify({ allowedIPs: allowlist }, null, 2));
+          }
+          console.log(colors.green(`Appended IP: ${ip}`));
+          console.log(colors.cyan(`Current allowlist: ${JSON.stringify(allowlist, null, 2)}`));
+        } else {
+          console.log(colors.yellow(`IP already in allowlist: ${ip}`));
+        }
+      } else {
+        console.log(colors.red('No IP provided to append.'));
+      }
+      break;
+    case 'help':
+      console.log(`
+Usage: cli interface
+
+Commands:
+  stop                    Stop the server
+  restart                 Restart the server
+  refresh                 Refresh blocked IPs
+  append <ip>             Append an IP to the allowlist  [EXAMPLE: 'append 192.168.x.x']
+  help                    Display this help message
+      `);
       break;
     default:
       console.log(colors.red(`Unknown command: ${input}`));
