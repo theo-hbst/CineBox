@@ -9,8 +9,6 @@ Serveur perso pour le streaming et le téléchargement de films et séries
 
 - settings - paramètres propres aux utilisateurs en json
 
-- redirect.js au début de chaque page
-
 - gérer le téléchargement de torrents/magnets (partie récupération magnet dans fichier .py fonctionnelle)
 
 - ajouter commande 'list' pour afficher le message d'ip ouvertes
@@ -19,4 +17,4 @@ Serveur perso pour le streaming et le téléchargement de films et séries
 
 - faire fonctionner la commande 'refresh'
 
-- régler tailwindcss
+- régler msgbox qui s'affiche pas torrent.html quand on submit

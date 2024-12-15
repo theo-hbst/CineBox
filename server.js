@@ -14,7 +14,6 @@ const { hideBin } = require('yargs/helpers');
 const { spawn } = require('child_process');
 const colors = require('colors');
 const readline = require('readline');
-const csurf = require('csurf');
 
 const version = '1.2.0';
 
@@ -67,8 +66,6 @@ app.use((req, res, next) => {
   res.cookie('session', '1', {httpOnly: true });
   next();
 });
-
-app.use(csurf({ cookie: true }));
 
 const limiter = rateLimit({
   windowMs: 5 * 60 * 1000, // 5 minutes
@@ -125,16 +122,20 @@ app.post('/submit_form', (req, res) => {
   pythonProcess.on('close', (code) => {
     console.log(colors.yellow(`child process exited with code ${code}`));
     console.log(colors.green('Form data processed successfully'));
-    res.status(200).send('Form data processed successfully');
+    res.redirect('/public/pages/content/torrent.html');
+    });
+
+  io.on('connection', (socket) => {
+    socket.on('pageLoaded', (page) => {
+    if (page === '/public/pages/content/torrent.html') {
+      socket.emit('showAlert', 'You have been redirected to the torrent page.');
+    }
+    });
   });
 });
 
 app.get('/form', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/pages/content/form.html'));
-});
-
-app.get('/csrf-token', (req, res) => {
-  res.json({ csrfToken: req.csrfToken() });
 });
 
 app.use((req, res, next) => {
