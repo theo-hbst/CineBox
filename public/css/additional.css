@@ -68,12 +68,6 @@ section form input {
     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
-section form input:focus {
-    border-color: #DC2626;
-    outline: 0;
-    box-shadow: 0 0 0 0.2rem #DC2626;
-}
-
 section form button {
     width: 100%;
     padding: 0.75rem;
@@ -97,8 +91,16 @@ section form input[type="radio"] {
     vertical-align: middle;
     margin-right: 0.5rem;
     margin-bottom: 5px;
+    accent-color: #DC2626;
 }
 
 section form input[type="text"] {
+    size: 10vw;
     margin-top: 10px;
+    outline: none;
+}
+
+section form input[type="text"]:focus {
+    margin-top: 10px;
+    outline: 2px solid red;
 }

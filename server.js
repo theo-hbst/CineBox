@@ -21,6 +21,9 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
+const EventEmitter = require('events');
+EventEmitter.defaultMaxListeners = 20;
+
 const argv = yargs(hideBin(process.argv))
   .option('port', {
     alias: 'p',
@@ -127,9 +130,7 @@ app.post('/submit_form', (req, res) => {
 
   io.on('connection', (socket) => {
     socket.on('pageLoaded', (page) => {
-    if (page === '/public/pages/content/torrent.html') {
-      socket.emit('showAlert', 'You have been redirected to the torrent page.');
-    }
+    socket.emit('showAlert', 'You have been redirected to the torrent page.');
     });
   });
 });
@@ -216,8 +217,6 @@ const rl = readline.createInterface({
   prompt: '>>> '
 });
 
-rl.prompt();
-
 rl.on('line', (input) => {
   const [command, ip] = input.trim().split(' ');
 
@@ -225,14 +224,12 @@ rl.on('line', (input) => {
     case 'stop':
       console.log(colors.red('Stopping server...'));
       server.close(() => {
-        console.log(colors.red('Server stopped.'));
         process.exit(0);
       });
       break;
     case 'restart':
       console.log(colors.yellow('Restarting server...'));
       server.close(() => {
-        console.log(colors.yellow('Server stopped.'));
         const nodeProcess = spawn('node', [process.argv[1], ...process.argv.slice(2)], {
           stdio: 'inherit'
         });
@@ -264,6 +261,25 @@ rl.on('line', (input) => {
         console.log(colors.red('No IP provided to append.'));
       }
       break;
+    case 'list':
+      console.log(colors.yellow('Open IP addresses:'));
+      const networkInterfaces = os.networkInterfaces();
+      for (const name of Object.keys(networkInterfaces)) {
+        for (const net of networkInterfaces[name]) {
+          if (net.family === "IPv4") {
+            console.log(colors.green(`http://${net.address}:${port}`));
+          }
+        }
+      }
+      break;
+    case 'allowlist':
+      console.log(colors.cyan('Current allowlist:'));
+      console.log(colors.cyan(JSON.stringify(allowlist, null, 2)));
+      break;
+    case 'clear':
+      console.clear();
+      console.log(colors.yellow('Console cleared.'));
+      break;
     case 'help':
       console.log(`
 Usage: cli interface
@@ -273,6 +289,9 @@ Commands:
   restart                 Restart the server
   refresh                 Refresh blocked IPs
   append <ip>             Append an IP to the allowlist  [EXAMPLE: 'append 192.168.x.x']
+  list                    List open IP addresses
+  allowlist               Display the current allowlist
+  clear                   Clear the console
   help                    Display this help message
       `);
       break;
