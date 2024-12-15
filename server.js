@@ -14,6 +14,7 @@ const { hideBin } = require('yargs/helpers');
 const { spawn } = require('child_process');
 const colors = require('colors');
 const readline = require('readline');
+const csurf = require('csurf');
 
 const version = '1.2.0';
 
@@ -63,11 +64,11 @@ app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(cookieParser());
 app.use((req, res, next) => {
-  res.cookie('session', '1', { secure: true, httpOnly: true });
+  res.cookie('session', '1', {httpOnly: true });
   next();
 });
 
-// app.use(csurf({ cookie: true }));
+app.use(csurf({ cookie: true }));
 
 const limiter = rateLimit({
   windowMs: 5 * 60 * 1000, // 5 minutes

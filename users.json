@@ -1,9 +1,6 @@
 {
   "users": [
     { "username": "Théo", "password": "theo081008!h" },
-    { "username": "Esra", "password": "" },
-    { "username": "Philippe", "password": "" },
-    { "username": "Pierre", "password": "P.Herbst-(4967)" },
-    { "username": "Annie", "password": "" }
+    { "username": "", "password": ""}
   ]
 }

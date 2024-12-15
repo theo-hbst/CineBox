@@ -17,4 +17,6 @@ Serveur perso pour le streaming et le téléchargement de films et séries
 
 - ajouter commande 'allowlist' pour afficher l'allowlist actuelle
 
--faire fonctionner la commande 'refresh'
+- faire fonctionner la commande 'refresh'
+
+- régler tailwindcss
