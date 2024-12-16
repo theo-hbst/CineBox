@@ -17,8 +17,6 @@ const { spawn } = require('child_process');
 
 const version = '1.2.0';
 
-const BASE_DIR = 'public'; // Change this to the directory you want to serve files from
-
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
@@ -53,6 +51,8 @@ const argv = yargs(hideBin(process.argv))
     description: 'Display this usage guide.'
   })
   .argv;
+
+const BASE_DIR = __dirname + '/Media';
 
 let allowlist = [];
 if (argv.allowlist) {
@@ -203,6 +203,40 @@ app.get('/download', (req, res) => {
   console.log(colors.yellow(`Downloaded file: ${filePath}`));
   res.download(fullPath);
 });
+
+app.get('/movies', (req, res) => {
+  const moviesFolder = path.join(BASE_DIR, 'movies');
+  const movies = [];
+
+  fs.readdir(moviesFolder, (err, files) => {
+    if (err) {
+      return res.status(500).json({ error: 'Unable to scan directory' });
+    }
+
+    files.forEach(filename => {
+      if (filename.endsWith('.mp4') || filename.endsWith('.mkv')) {
+        const thumbnailPath = path.join(moviesFolder, 'src', filename.replace(/\.[^/.]+$/, '') + '.jpg');
+        const movie = {
+          name: filename,
+          thumbnail: fs.existsSync(thumbnailPath) ? thumbnailPath : 'black-thumbnail.jpg'
+        };
+        movies.push(movie);
+      }
+    });
+
+    res.json(movies);
+  });
+});
+
+app.use('/movies', express.static(path.join(BASE_DIR, 'movies'), {
+  setHeaders: (res, path) => {
+    if (path.endsWith('.mp4')) {
+      res.setHeader('Content-Type', 'video/mp4');
+    } else if (path.endsWith('.mkv')) {
+      res.setHeader('Content-Type', 'video/x-matroska');
+    }
+  }
+}));
 
 app.use((req, res) => {
   let filePath = path.join(__dirname, req.url === "/" ? "index.html" : req.url);

@@ -122,7 +122,7 @@
             href="filemanager.html"
           >
             <svg
-              class="h-6 w-6 fill-red-600"
+              class="h-5 w-5 fill-red-600"
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
             >
@@ -170,14 +170,6 @@
               </g>
             </svg>
             <span>Se déconnecter</span>
-          </a>
-
-          <a
-            class="icon-link hover:border-r-4 hover:border-r-red-600 hover:font-semibold dark:hover:text-white"
-            href="settings.html"
-          >
-            <img class="icon" src="/public/imgs/settings.png" alt="Paramètres" />
-            <span class="icon-text">Paramètres</span>
           </a>
 
           <div class="text-gray-400/70 font-medium uppercase">Me contacter</div>
@@ -236,7 +228,7 @@
             </div>
             <!-- Les fichiers et dossiers seront affichés ici -->
           </div>
-          <div id="current-path" style="position: absolute; bottom: 10px; right: 10px;">
+          <div id="current-path" style="position: fixed; bottom: 10px; right: 10px;">
             <!-- Le chemin actuel sera affiché ici -->
           </div>
           <script src="/public/js/filemanager.js"></script>
