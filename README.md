@@ -12,3 +12,5 @@ Serveur perso pour le streaming et le téléchargement de films et séries
 - gérer le téléchargement de torrents/magnets (partie récupération magnet dans fichier .py fonctionnelle)
 
 - faire fonctionner la commande 'refresh'
+
+- ajouter argument d'emplacement pour filemanager (+ emplacement par défaut)

@@ -11,15 +11,15 @@
 .icon-link {
     display: flex;
     align-items: center;
-    margin-right: 0; /* Marge Ã  droite pour l'espace entre les icÃ´nes */
+    margin-right: 0; /* Marge à droite pour l'espace entre les icônes */
     text-decoration: none;
     color: #6b7280; /* Couleur du texte */
 }
   
 .icon {
     width: 18px; /* Ajustez la largeur selon vos besoins */
-    height: auto; /* Permet Ã  la hauteur de s'ajuster proportionnellement Ã  la largeur */
-    margin-right: 0.5rem; /* Marge Ã  droite pour l'espace entre l'icÃ´ne et le texte */
+    height: auto; /* Permet à la hauteur de s'ajuster proportionnellement à la largeur */
+    margin-right: 0.5rem; /* Marge à droite pour l'espace entre l'icône et le texte */
 }
   
 .icon-text {
@@ -42,6 +42,7 @@ section h1 {
     font-weight: 700;
     line-height: 1.2;
     letter-spacing: -0.05em;
+    margin-bottom: 10px;
 }
 
 section form {

@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="/public/css/style.css" rel="stylesheet" />
     <link href="/public/css/additional.css" rel="stylesheet" />
+    <link href="/public/css/filemanager.css" rel="stylesheet" />
     <link rel="shortcut icon" href="/public/imgs/icon.ico" />
     <link rel="apple-touch-icon" href="/public/imgs/icon.ico" />
     <meta name="author" content="Théo" />
@@ -225,29 +226,20 @@
           <div class="tracking-wide dark:text-white flex-1">
             MovieShare<span class="text-red-600">.</span>
           </div>
-
-          <div class="relative items-center content-center flex ml-2">
-            <span class="text-gray-400 absolute left-4 cursor-pointer">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                ></path>
-              </svg>
-            </span>
-          </div>
         </header>
-
+        
         <section>
-          <!-- Page du milieu à faire -->
+          <h1>Gestionnaire de fichiers</h1>
+          <div id="file-manager">
+            <div id="back-button-container" style="position: absolute; top: 10px; left: 10px;">
+              <button id="back-button" style="display: none;">Retour</button>
+            </div>
+            <!-- Les fichiers et dossiers seront affichés ici -->
+          </div>
+          <div id="current-path" style="position: absolute; bottom: 10px; right: 10px;">
+            <!-- Le chemin actuel sera affiché ici -->
+          </div>
+          <script src="/public/js/filemanager.js"></script>
         </section>
       </main>
     </div>

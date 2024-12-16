@@ -205,22 +205,25 @@
         <!-- /Menu -->
       </aside>
 
+      <main class="flex-1 py-10 px-5 sm:px-10">
+        <header class="font-bold text-lg flex items-center gap-x-3 md:hidden mb-12">
+          <!-- ...existing code... -->
+        </header>
+
         <section>
-          <div class="torrents"></div>
-            <h1>Formulaire de test</h1>
-            <form id="test-form" action="/submit_form" method="POST">
-                <label>
-                    <input type="radio" name="option" value="option1"> Option 1
-                </label>
-                <label>
-                    <input type="radio" name="option" value="option2"> Option 2
-                </label>
-                <label>
-                    <input type="text" name="text_input" placeholder="Entrez le lien MAGNET">
-                </label>
-                <button type="submit">Télécharger</button>
-            </form>
-          </div>
+          <h1>Formulaire de test</h1>
+          <form id="test-form" action="/submit_form" method="POST">
+            <label>
+              <input type="radio" name="option" value="option1"> Option 1
+            </label>
+            <label>
+              <input type="radio" name="option" value="option2"> Option 2
+            </label>
+            <label>
+              <input type="text" name="text_input" placeholder="Entrez le lien MAGNET">
+            </label>
+            <button type="submit">Télécharger</button>
+          </form>
         </section>
       </main>
     </div>

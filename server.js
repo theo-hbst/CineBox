@@ -11,11 +11,13 @@ const http = require('http');
 const socketIo = require('socket.io');
 const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
-const { spawn } = require('child_process');
 const colors = require('colors');
 const readline = require('readline');
+const { spawn } = require('child_process');
 
 const version = '1.2.0';
+
+const BASE_DIR = 'public'; // Change this to the directory you want to serve files from
 
 const app = express();
 const server = http.createServer(app);
@@ -149,6 +151,57 @@ app.use((req, res, next) => {
     return;
   }
   next();
+});
+
+// Routes pour le gestionnaire de fichiers
+
+app.get('/files', (req, res) => {
+  const filePath = req.query.path || '';
+  const fullPath = path.join(BASE_DIR, filePath);
+  fs.readdir(fullPath, (err, items) => {
+    if (err) {
+      return res.status(500).json({ error: 'Unable to scan directory' });
+    }
+    const files = items.map(item => {
+      const itemPath = path.join(fullPath, item);
+      return {
+        name: item,
+        path: path.join(filePath, item),
+        isDirectory: fs.statSync(itemPath).isDirectory()
+      };
+    });
+    res.json(files);
+  });
+});
+
+app.delete('/delete', (req, res) => {
+  const filePath = req.query.path;
+  const fullPath = path.join(BASE_DIR, filePath);
+  if (fs.statSync(fullPath).isDirectory()) {
+    fs.rmSync(fullPath, { recursive: true, force: true });
+    console.log(colors.yellow(`Deleted directory: ${filePath}`));
+  } else {
+    fs.unlinkSync(fullPath);
+    console.log(colors.yellow(`Deleted file: ${filePath}`));
+  }
+  res.sendStatus(204);
+});
+
+app.post('/rename', (req, res) => {
+  const oldPath = req.query.oldPath;
+  const newPath = req.query.newPath;
+  const fullOldPath = path.join(BASE_DIR, oldPath);
+  const fullNewPath = path.join(BASE_DIR, path.dirname(oldPath), newPath);
+  fs.renameSync(fullOldPath, fullNewPath);
+  console.log(colors.yellow(`Renamed: ${oldPath} to ${newPath}`));
+  res.sendStatus(204);
+});
+
+app.get('/download', (req, res) => {
+  const filePath = req.query.path;
+  const fullPath = path.join(BASE_DIR, filePath);
+  console.log(colors.yellow(`Downloaded file: ${filePath}`));
+  res.download(fullPath);
 });
 
 app.use((req, res) => {
