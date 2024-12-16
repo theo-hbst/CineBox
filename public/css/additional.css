@@ -2,6 +2,11 @@
     width: 30px;
     height: auto;
 }
+
+.settings {
+    width: 30px;
+    height: auto;
+  }
   
 .icon-link {
     display: flex;

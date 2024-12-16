@@ -72,7 +72,7 @@ app.use((req, res, next) => {
   next();
 });
 
-const limiter = rateLimit({
+let limiter = rateLimit({
   windowMs: 5 * 60 * 1000, // 5 minutes
   max: 1000, // limit each IP to 1000 requests per windowMs
   handler: function(req, res, /*next*/) {
@@ -104,6 +104,51 @@ app.post('/auth',
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.post('/server/stop', (req, res) => {
+  console.log(colors.red('Stopping server...'));
+  server.close(() => {
+    process.exit(0);
+  });
+});
+
+app.post('/server/restart', (req, res) => {
+  console.log(colors.yellow('Restarting server...'));
+  server.close(() => {
+    const nodeProcess = spawn('node', [process.argv[1], ...process.argv.slice(2)], {
+      stdio: 'inherit'
+    });
+    nodeProcess.on('close', (code) => {
+      console.log(colors.red(`Node process exited with code ${code}`));
+      process.exit(code);
+    });
+  });
+  res.send('Server restarting');
+});
+
+app.post('/server/refresh', (req, res) => {
+  console.log(colors.blue('Refreshing blocked IPs...'));
+  limiter.resetKey('*'); // Reset the request count for all IPs
+  console.log(colors.blue('Blocked IPs refreshed.'));
+  res.send('Blocked IPs refreshed');
+});
+
+app.post('/server/append', (req, res) => {
+  const ip = req.body.ip;
+  if (ip) {
+    if (!allowlist.includes(ip)) {
+      allowlist.push(ip);
+      fs.writeFileSync('allowlist.json', JSON.stringify({ allowedIPs: allowlist }, null, 2));
+      console.log(colors.green(`Appended IP: ${ip}`));
+      res.send(`Appended IP: ${ip}`);
+    } else {
+      console.log(colors.yellow(`IP already in allowlist: ${ip}`));
+      res.send(`IP already in allowlist: ${ip}`);
+    }
+  } else {
+    res.status(400).send('No IP provided to append.');
+  }
+});
 
 app.post('/submit_form', (req, res) => {
   const option = req.body.option;
@@ -328,8 +373,7 @@ rl.on('line', (input) => {
       break;
     case 'refresh':
       console.log(colors.blue('Refreshing blocked IPs...'));
-      // Logic to refresh blocked IPs (reset their request count)
-      // limiter.resetKey('*');
+      limiter.resetKey('*'); // Reset the request count for all IPs
       console.log(colors.blue('Blocked IPs refreshed.'));
       break;
     case 'append':
