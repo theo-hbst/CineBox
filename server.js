@@ -15,7 +15,7 @@ const colors = require('colors');
 const readline = require('readline');
 const { spawn } = require('child_process');
 
-const version = '1.3.0';
+const version = '1.3.5';
 
 const app = express();
 const server = http.createServer(app);
@@ -82,7 +82,7 @@ let limiter = rateLimit({
   max: 1000, // limit each IP to 1000 requests per windowMs
   handler: function(req, res, /*next*/) {
     console.log(colors.red(`Blocked IP due to rate limit: ${req.ip}`)); // Log the blocked IP
-    res.status(429).sendFile(path.join(__dirname, 'public/pages/errors/429.html'));
+    res.status(429).sendFile(path.join(__dirname, '/public/pages/errors/429.html'));
   }
 });
 app.use(limiter);
@@ -180,22 +180,18 @@ app.post('/submit_form', (req, res) => {
   });
 });
 
-app.get('/form', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/pages/content/form.html'));
-});
-
 app.use((req, res, next) => {
   const clientIp = req.socket && req.socket.remoteAddress ? req.socket.remoteAddress.replace(/^::ffff:/, "") : null;
 
   if (argv.localhost) {
     if (clientIp !== '127.0.0.1') {
       console.log(colors.red(`Rejected IP: ${clientIp}`)); // Log the blocked IP
-      res.sendFile(path.join(__dirname, "public/pages/errors/403.html"));
+      res.sendFile(path.join(__dirname, "/public/pages/errors/403.html"));
       return;
     }
   } else if (argv.allowlist && clientIp && !allowlist.includes(clientIp)) {
     console.log(colors.red(`Rejected IP: ${clientIp}`)); // Log the blocked IP 
-    res.sendFile(path.join(__dirname, "public/pages/errors/403.html"));
+    res.sendFile(path.join(__dirname, "/public/pages/errors/403.html"));
     return;
   }
   next();
@@ -341,7 +337,7 @@ app.use((req, res) => {
   fs.readFile(filePath, (error, content) => {
     if (error) {
       if (error.code === 'ENOENT') {
-        fs.readFile(path.join(__dirname, "public/pages/errors/404.html"), (error, content) => {
+        fs.readFile(path.join(__dirname, "/public/pages/errors/404.html"), (error, content) => {
           res.writeHead(404, { "Content-Type": "text/html" });
           res.end(content, "utf-8");
         });

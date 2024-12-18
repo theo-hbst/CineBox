@@ -7,7 +7,7 @@ body {
 }
 
 body {
-    background: url(../imgs/landscape.jpg) no-repeat center;
+    background: url(/public/imgs/landscape.jpg) no-repeat center;
     background-size: cover;
 }
 

@@ -11,5 +11,3 @@ Serveur perso pour le streaming et le téléchargement de films et séries
 - web scraper IMDB pour la page d'accueil (home.html)
 
 - déplacer des dossiers/fichiers avec filemanager (dossier de téléchargement par défaut: /Media/downloads)
-
-- tout transformer en liens statiques (symboliques)

@@ -1,24 +1,24 @@
 <html>
   <header>
     <title>Déconnecté</title>
-    <link rel="stylesheet" href="../css/fonts.css" type="text/css" media="all" />
-    <link rel="stylesheet" href="../css/login.css" type="text/css" media="all" />
+    <link rel="stylesheet" href="/public/css/fonts.css" type="text/css" media="all" />
+    <link rel="stylesheet" href="/public/css/login.css" type="text/css" media="all" />
 
-    <link rel="shortcut icon" href="../imgs/icon.ico" />
-    <link rel="apple-touch-icon" href="../imgs/icon.ico" />
+    <link rel="shortcut icon" href="/public/imgs/icon.ico" />
+    <link rel="apple-touch-icon" href="/public/imgs/icon.ico" />
 
     <meta name="viewport" content="initial-scale=1" />
     <meta charset="utf-8" />
 
-    <script src="../js/jquery-1.11.2.min.js"></script>
-    <script src="../js/login.js"></script>
+    <script src="/public/js/jquery-1.11.2.min.js"></script>
+    <script src="/public/js/login.js"></script>
   </header>
 
   <body>
     <script>
       localStorage.removeItem("username");
       setTimeout(function() {
-        window.location.href = "../../index.html";
+        window.location.href = "/";
       }, 5000);
     </script>
 
