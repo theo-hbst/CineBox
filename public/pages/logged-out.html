@@ -17,10 +17,14 @@
   <body>
     <script>
       localStorage.removeItem("username");
+      setTimeout(function() {
+        window.location.href = "../../index.html";
+      }, 5000);
     </script>
 
     <h1>Déconnecté</h1>
     <p>Vous avez été déconnecté de ce service avec succès!</p>
-    <p class="footer">Secure Form - V1.0</p>
+    <p class="redirect-message">Vous serez redirigé vers la page d'accueil dans quelques secondes...</p>
+    <p class="footer">Secure Form - V1.4</p>
   </body>
 </html>

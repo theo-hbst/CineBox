@@ -43,10 +43,6 @@ input {
     background: transparent;
 }
 
-input[type=password] {
-    padding-right: 40px;
-}
-
 input:focus {
     border-bottom-color: black;
 }
@@ -98,6 +94,10 @@ p {
     font-weight: 700;
     font-size: 16px;
     margin-top: -80px;
+}
+
+p.redirect-message {
+    margin-top: -40px; /* Ajustez cette valeur selon vos besoins */
 }
 
 p.footer {

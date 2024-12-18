@@ -8,8 +8,8 @@ Serveur perso pour le streaming et le téléchargement de films et séries
 - gérer le téléchargement de torrents/magnets avec le menu radio (1 pour torrent et 1 pour magnet, partie récupération magnet dans fichier .py fonctionnelle)
 + trouver moyen de telecharger ces torrents avec un CLI
 
-- faire fonctionner la commande 'refresh'
+- web scraper IMDB pour la page d'accueil (home.html)
 
-- redirect à la page de connection au bout de 5s quand on se déconnecte
+- déplacer des dossiers/fichiers avec filemanager (dossier de téléchargement par défaut: /Media/downloads)
 
-- régler ligne en dessous du mdp connection (taille de la ligne)
+- tout transformer en liens statiques (symboliques)

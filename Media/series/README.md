@@ -1,5 +1,5 @@
-Créer un dossier par série/saison et y placer tous les épisodes
-Créer un dossier 'src' dans chaque dossier de série/saison
+Créer un dossier par série/saison et y placer tous les épisodes.
+Créer un dossier 'src' dans chaque dossier de série/saison.
 Ajouter les fichiers .jpg dans le dossier 'src' avec le même nom que l'episode.
 
 Exemple:

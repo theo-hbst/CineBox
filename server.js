@@ -15,7 +15,7 @@ const colors = require('colors');
 const readline = require('readline');
 const { spawn } = require('child_process');
 
-const version = '1.2.0';
+const version = '1.3.0';
 
 const app = express();
 const server = http.createServer(app);
@@ -129,13 +129,6 @@ app.post('/server/restart', (req, res) => {
     });
   });
   res.send('Server restarting');
-});
-
-app.post('/server/refresh', (req, res) => {
-  console.log(colors.blue('Refreshing blocked IPs...'));
-  limiter.resetKey('*'); // Reset the request count for all IPs
-  console.log(colors.blue('Blocked IPs refreshed.'));
-  res.send('Blocked IPs refreshed');
 });
 
 app.post('/server/append', (req, res) => {
@@ -423,11 +416,6 @@ rl.on('line', (input) => {
         });
       });
       break;
-    case 'refresh':
-      console.log(colors.blue('Refreshing blocked IPs...'));
-      limiter.resetKey('*'); // Reset the request count for all IPs
-      console.log(colors.blue('Blocked IPs refreshed.'));
-      break;
     case 'append':
       if (ip) {
         if (!allowlist.includes(ip)) {
@@ -470,7 +458,6 @@ Usage: cli interface
 Commands:
   stop                    Stop the server
   restart                 Restart the server
-  refresh                 Refresh blocked IPs
   append <ip>             Append an IP to the allowlist  [EXAMPLE: 'append 192.168.x.x']
   list                    List open IP addresses
   allowlist               Display the current allowlist
