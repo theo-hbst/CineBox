@@ -31,6 +31,11 @@ document.addEventListener('DOMContentLoaded', () => {
           // Filtrer les dossiers src
           data = data.filter(item => item.name !== 'src');
 
+          // Si on est à la racine, ne montrer que les dossiers
+          if (path === 'series') {
+            data = data.filter(item => item.isDirectory);
+          }
+
           // Trier les éléments pour que les dossiers apparaissent en premier
           data.sort((a, b) => b.isDirectory - a.isDirectory);
 

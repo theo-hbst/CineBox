@@ -9,3 +9,7 @@ Serveur perso pour le streaming et le téléchargement de films et séries
 + trouver moyen de telecharger ces torrents avec un CLI
 
 - faire fonctionner la commande 'refresh'
+
+- redirect à la page de connection au bout de 5s quand on se déconnecte
+
+- régler ligne en dessous du mdp connection (taille de la ligne)
