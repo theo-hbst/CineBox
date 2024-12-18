@@ -35,8 +35,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     fileName.textContent = item.isDirectory ? `${item.name}/` : item.name;
                     fileName.addEventListener('click', () => {
                         if (item.isDirectory) {
-                            currentPath = item.path;
-                            fetchFiles(item.path);
+                            currentPath = path ? `${path}/${item.name}` : item.name;
+                            fetchFiles(currentPath);
                         }
                     });
 
@@ -46,7 +46,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     const deleteButton = document.createElement('button');
                     deleteButton.textContent = 'Supprimer';
                     deleteButton.addEventListener('click', () => {
-                        deleteFile(item.path);
+                        if (confirm(`Êtes-vous sûr de vouloir supprimer ${item.name} ?`)) {
+                            deleteFile(item.path);
+                        }
                     });
 
                     const renameButton = document.createElement('button');

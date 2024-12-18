@@ -11,4 +11,4 @@ def test_csrf(url, param_dict):
 
 # Remplacez 'http://yourserver.com/form' par l'URL de votre serveur
 # Remplacez 'field1' et 'field2' par les noms de vos paramètres
-test_csrf('http://yourserver.com/form', {'field1': 'value1', 'field2': 'value2'})
+test_csrf('http://127.0.0.1:3000', {'login_field': 'a', 'password_field': 'a'})

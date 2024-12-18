@@ -123,3 +123,7 @@ section form input[type="text"]:focus {
 aside {
     margin-left: 20px; /* Add margin to the left */
 }
+
+.serverControl button{
+    margin-bottom: 10px
+}

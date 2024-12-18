@@ -36,6 +36,11 @@ const argv = yargs(hideBin(process.argv))
     alias: 'a',
     description: 'Enable allowlist',
   })
+  .option('localhost', {
+    alias: 'l',
+    type: 'boolean',
+    description: 'Run server on localhost only',
+  })
   .option('debug-append', {
     type: 'boolean',
     description: 'Do not append server IPs to allowlist',
@@ -189,8 +194,13 @@ app.get('/form', (req, res) => {
 app.use((req, res, next) => {
   const clientIp = req.socket && req.socket.remoteAddress ? req.socket.remoteAddress.replace(/^::ffff:/, "") : null;
 
-  // Check if the client's IP address is in the allowlist
-  if (argv.allowlist && clientIp && !allowlist.includes(clientIp)) {
+  if (argv.localhost) {
+    if (clientIp !== '127.0.0.1') {
+      console.log(colors.red(`Rejected IP: ${clientIp}`)); // Log the blocked IP
+      res.sendFile(path.join(__dirname, "public/pages/errors/403.html"));
+      return;
+    }
+  } else if (argv.allowlist && clientIp && !allowlist.includes(clientIp)) {
     console.log(colors.red(`Rejected IP: ${clientIp}`)); // Log the blocked IP 
     res.sendFile(path.join(__dirname, "public/pages/errors/403.html"));
     return;
@@ -283,6 +293,41 @@ app.use('/movies', express.static(path.join(BASE_DIR, 'movies'), {
   }
 }));
 
+app.get('/series', (req, res) => {
+  const seriesFolder = path.join(BASE_DIR, 'series');
+  const series = [];
+
+  fs.readdir(seriesFolder, (err, files) => {
+    if (err) {
+      return res.status(500).json({ error: 'Unable to scan directory' });
+    }
+
+    files.forEach(filename => {
+      const seriesPath = path.join(seriesFolder, filename);
+      if (fs.statSync(seriesPath).isDirectory()) {
+        const thumbnailPath = path.join(seriesPath, 'src', 'thumbnail.jpg');
+        const serie = {
+          name: filename,
+          thumbnail: fs.existsSync(thumbnailPath) ? thumbnailPath : 'black-thumbnail.jpg'
+        };
+        series.push(serie);
+      }
+    });
+
+    res.json(series);
+  });
+});
+
+app.use('/series', express.static(path.join(BASE_DIR, 'series'), {
+  setHeaders: (res, path) => {
+    if (path.endsWith('.mp4')) {
+      res.setHeader('Content-Type', 'video/mp4');
+    } else if (path.endsWith('.mkv')) {
+      res.setHeader('Content-Type', 'video/x-matroska');
+    }
+  }
+}));
+
 app.use((req, res) => {
   let filePath = path.join(__dirname, req.url === "/" ? "index.html" : req.url);
   let extname = String(path.extname(filePath)).toLowerCase();
@@ -323,14 +368,21 @@ const port = argv.port; // Change this to your preferred port
 server.listen(port, () => {
   console.log(colors.yellow(`Server is running on the following addresses:`));
 
-  const networkInterfaces = os.networkInterfaces();
-  for (const name of Object.keys(networkInterfaces)) {
-    for (const net of networkInterfaces[name]) {
-      // Skip over non-IPv4 addresses
-      if (net.family === "IPv4") {
-        console.log(colors.green(`http://${net.address}:${port}`));
-        if (!argv['debug-append'] && !allowlist.includes(net.address)) {
-          allowlist.push(net.address);
+  if (argv.localhost) {
+    console.log(colors.green(`http://127.0.0.1:${port}`));
+    if (!allowlist.includes('127.0.0.1')) {
+      allowlist.push('127.0.0.1');
+    }
+  } else {
+    const networkInterfaces = os.networkInterfaces();
+    for (const name of Object.keys(networkInterfaces)) {
+      for (const net of networkInterfaces[name]) {
+        // Skip over non-IPv4 addresses
+        if (net.family === "IPv4") {
+          console.log(colors.green(`http://${net.address}:${port}`));
+          if (!argv['debug-append'] && !allowlist.includes(net.address)) {
+            allowlist.push(net.address);
+          }
         }
       }
     }

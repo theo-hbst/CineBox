@@ -18,4 +18,4 @@ def test_sql_injection(url, param_dict):
 
 # Remplacez 'http://yourserver.com/form' par l'URL de votre serveur
 # Remplacez 'field1' et 'field2' par les noms de vos paramètres
-test_sql_injection('http://yourserver.com/form', {'field1': '', 'field2': ''})
+test_sql_injection('http://127.0.0.1:3000', {'login_field': '', 'password_field': ''})

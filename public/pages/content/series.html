@@ -7,6 +7,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="/public/css/style.css" rel="stylesheet" />
     <link href="/public/css/additional.css" rel="stylesheet" />
+    <link href="/public/css/filemanager.css" rel="stylesheet" />
+    <link href="/public/css/series.css" rel="stylesheet" />
     <link rel="shortcut icon" href="/public/imgs/icon.ico" />
     <link rel="apple-touch-icon" href="/public/imgs/icon.ico" />
     <meta name="author" content="Théo" />
@@ -221,7 +223,21 @@
         </header>
 
         <section>
-          <!-- Page du milieu à faire -->
+          <h1>Séries</h1>
+          <div id="series-manager">
+            <div id="back-button-container" style="position: absolute; top: 10px; left: 10px;">
+              <button id="back-button" style="display: none;">Retour</button>
+            </div>
+            <!-- Les fichiers et dossiers seront affichés ici -->
+          </div>
+          <div id="current-path" style="position: fixed; bottom: 10px; right: 10px;">
+            <!-- Le chemin actuel sera affiché ici -->
+          </div>
+          <div class="fullscreen-video" id="fullscreenVideo">
+            <div class="return-button" id="returnButton">Retour</div>
+            <video controls id="videoPlayer"></video>
+          </div>
+          <script src="/public/js/series.js"></script>
         </section>
       </main>
     </div>

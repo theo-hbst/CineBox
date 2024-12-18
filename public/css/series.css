@@ -1,0 +1,98 @@
+body {
+    background-color: #121212;
+    color: #ffffff;
+    font-family: Arial, sans-serif;
+}
+.series-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Change to 2 columns */
+    gap: 20px;
+    padding: 20px;
+}
+.episode-item {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative; /* Ajouter position relative */
+}
+.episode-item img {
+    width: calc(35vw - 40px); /* Adjust width for 2 columns */
+    height: auto;
+    cursor: pointer;
+}
+.black-rectangle {
+    width: calc(35vw - 40px); /* Adjust width for 2 columns */
+    height: calc((35vw - 40px) * 9 / 16); /* 16:9 aspect ratio */
+    background-color: black;
+    margin: 0 auto;
+    cursor: pointer;
+    position: relative;
+}
+.episode-title {
+    margin-top: 10px;
+    font-size: 16px;
+    text-align: center; /* Assurer que le texte est centré sous le média */
+    position: absolute; /* Ajouter position absolute */
+    bottom: -30px; /* Placer le texte en bas */
+    width: 100%;
+}
+.fullscreen-video {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+.fullscreen-video video {
+    width: 80%;
+    height: 80%;
+}
+.return-button {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background-color: #444;
+    color: #fff;
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 0.375rem;
+}
+
+.return-button:hover {
+    background-color: #DC2626;
+}
+.folder-title {
+    color: #ffffff; /* Add color for file names */
+    cursor: pointer;
+    text-align: left; /* Remettre le texte à gauche */
+}
+.folder-item {
+    display: block; /* Mettre les dossiers sur des lignes différentes */
+    padding: 10px;
+    border-bottom: 1px solid #444;
+}
+.folder-line {
+    display: block; /* Assurer que chaque dossier prend toute la largeur */
+    width: 100%;
+}
+.folder-item .file-actions {
+    display: flex;
+    gap: 10px;
+}
+.folder-item .file-actions button {
+    background-color: #444;
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 0.375rem;
+}
+.folder-item .file-actions button:hover {
+    background-color: #DC2626;
+}

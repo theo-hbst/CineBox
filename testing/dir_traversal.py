@@ -2,7 +2,7 @@ import requests
 
 def test_directory_traversal(url):
     # Directory Traversal payload
-    payload = "/../../../../etc/passwd"
+    payload = "/../../../../Windows/System32/drivers/etc/hosts"
 
     try:
         response = requests.get(url + payload)
