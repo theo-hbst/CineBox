@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Films Populaires</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="movies" class="movies-grid"></div>
+    <script>
+        fetch('popular_movies.json')
+            .then(response => response.json())
+            .then(data => {
+                const moviesContainer = document.getElementById('movies');
+                data.results.forEach(movie => {
+                    const movieElement = document.createElement('div');
+                    movieElement.className = 'movie';
+                    movieElement.innerHTML = `
+                        <a href="${movie.url}" target="_blank" class="movie-link">
+                            <img src="${movie.poster}" alt="${movie.name}" width="100">
+                            <div class="movie-info">
+                                <span>${movie.name}</span>
+                            </div>
+                        </a>
+                    `;
+                    moviesContainer.appendChild(movieElement);
+                });
+            })
+            .catch(error => console.error('Error loading JSON:', error));
+    </script>
+</body>
+</html>

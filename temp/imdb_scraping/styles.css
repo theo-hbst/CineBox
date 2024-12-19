@@ -1,0 +1,51 @@
+body {
+    background-color: black;
+    color: white;
+    font-family: Arial, sans-serif;
+}
+
+.movies-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    padding: 20px;
+}
+
+.movie {
+    background-color: #333;
+    padding: 10px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    transition: transform 0.2s;
+}
+
+.movie:hover {
+    transform: scale(1.05);
+}
+
+.movie img {
+    margin-right: 20px;
+}
+
+.movie-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.movie-link {
+    color: white;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+}
+
+.movie-link:hover {
+    text-decoration: none;
+}
+
+@media (max-width: 600px) {
+    .movies-grid {
+        grid-template-columns: 1fr;
+    }
+}
