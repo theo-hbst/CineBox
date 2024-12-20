@@ -7,7 +7,7 @@ $(document).ready(function () {
         // Get the username from the form
         var username = document.querySelector('input[name="login_field"]').value;
         
-        $.getJSON('users.json', function (data) {
+        $.getJSON('/public/json/users.json', function (data) {
             // Vérification des identifiants dans les données JSON
             var userFound = data.users.find(function (user) {
                 return user.username === usernameInput && user.password === passwordInput;

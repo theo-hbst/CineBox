@@ -62,7 +62,7 @@ const BASE_DIR = __dirname + '/Media';
 let allowlist = [];
 if (argv.allowlist) {
   try {
-    const data = fs.readFileSync("allowlist.json");
+    const data = fs.readFileSync("public/json/allowlist.json");
     allowlist = JSON.parse(data).allowedIPs;
   } catch (err) {
     console.error(colors.magenta(err));
@@ -82,7 +82,7 @@ let limiter = rateLimit({
   max: 1000, // limit each IP to 1000 requests per windowMs
   handler: function(req, res, /*next*/) {
     console.log(colors.red(`Blocked IP due to rate limit: ${req.ip}`)); // Log the blocked IP
-    res.status(429).sendFile(path.join(__dirname, '/public/pages/errors/429.html'));
+    res.status(429).sendFile(path.join(__dirname, 'public/pages/errors/429.html'));
   }
 });
 app.use(limiter);
@@ -136,7 +136,7 @@ app.post('/server/append', (req, res) => {
   if (ip) {
     if (!allowlist.includes(ip)) {
       allowlist.push(ip);
-      fs.writeFileSync('allowlist.json', JSON.stringify({ allowedIPs: allowlist }, null, 2));
+      fs.writeFileSync('public/json/allowlist.json', JSON.stringify({ allowedIPs: allowlist }, null, 2));
       console.log(colors.green(`Appended IP: ${ip}`));
       res.send(`Appended IP: ${ip}`);
     } else {
@@ -155,22 +155,22 @@ app.post('/submit_form', (req, res) => {
   console.log(colors.green(`Option: ${option}`));
   console.log(colors.green(`Text Input: ${textInput}`));
 
-  const pythonProcess = spawn('python', ['handle_form.py', option, textInput]);
+  const pythonProcessForm = spawn('python', ['public/python/handle_form.py', option, textInput]);
 
   console.log(colors.yellow('Python engine started'));
   
-  pythonProcess.stdout.on('data', (data) => {
+  pythonProcessForm.stdout.on('data', (data) => {
     console.log(colors.yellow(`stdout: ${data}`));
   });
 
-  pythonProcess.stderr.on('data', (data) => {
+  pythonProcessForm.stderr.on('data', (data) => {
     console.error(colors.red(`stderr: ${data}`));
   });
 
-  pythonProcess.on('close', (code) => {
+  pythonProcessForm.on('close', (code) => {
     console.log(colors.yellow(`child process exited with code ${code}`));
     console.log(colors.green('Form data processed successfully'));
-    res.redirect('/public/pages/content/torrent.html');
+    res.redirect('public/pages/content/torrent.html');
     });
 
   io.on('connection', (socket) => {
@@ -180,18 +180,37 @@ app.post('/submit_form', (req, res) => {
   });
 });
 
+app.post('/scraper', (req, res) => {
+  const pythonProcessScraper = spawn('python', ['public/python/scrape.py']);
+
+  console.log(colors.yellow('Python engine started'));
+
+  pythonProcessScraper.stdout.on('data', (data) => {
+    console.log(colors.yellow(`stdout: ${data}`));
+  });
+
+  pythonProcessScraper.stderr.on('data', (data) => {
+    console.error(colors.red(`stderr: ${data}`));
+  });
+
+  pythonProcessScraper.on('close', (code) => {
+    console.log(colors.yellow(`child process exited with code ${code}`));
+    res.send('Scraper process completed');
+  });
+});
+
 app.use((req, res, next) => {
   const clientIp = req.socket && req.socket.remoteAddress ? req.socket.remoteAddress.replace(/^::ffff:/, "") : null;
 
   if (argv.localhost) {
     if (clientIp !== '127.0.0.1') {
       console.log(colors.red(`Rejected IP: ${clientIp}`)); // Log the blocked IP
-      res.sendFile(path.join(__dirname, "/public/pages/errors/403.html"));
+      res.sendFile(path.join(__dirname, "public/pages/errors/403.html"));
       return;
     }
   } else if (argv.allowlist && clientIp && !allowlist.includes(clientIp)) {
     console.log(colors.red(`Rejected IP: ${clientIp}`)); // Log the blocked IP 
-    res.sendFile(path.join(__dirname, "/public/pages/errors/403.html"));
+    res.sendFile(path.join(__dirname, "public/pages/errors/403.html"));
     return;
   }
   next();
@@ -337,7 +356,7 @@ app.use((req, res) => {
   fs.readFile(filePath, (error, content) => {
     if (error) {
       if (error.code === 'ENOENT') {
-        fs.readFile(path.join(__dirname, "/public/pages/errors/404.html"), (error, content) => {
+        fs.readFile(path.join(__dirname, "public/pages/errors/404.html"), (error, content) => {
           res.writeHead(404, { "Content-Type": "text/html" });
           res.end(content, "utf-8");
         });
@@ -378,7 +397,7 @@ server.listen(port, () => {
   }
 
   if (!argv['debug-append'] && argv['persist-append']) {
-    fs.writeFileSync('allowlist.json', JSON.stringify({ allowedIPs: allowlist }, null, 2));
+    fs.writeFileSync('public/json/allowlist.json', JSON.stringify({ allowedIPs: allowlist }, null, 2));
   }
   rl.prompt();
 });
@@ -417,7 +436,7 @@ rl.on('line', (input) => {
         if (!allowlist.includes(ip)) {
           allowlist.push(ip);
           if (argv['persist-append']) {
-            fs.writeFileSync('allowlist.json', JSON.stringify({ allowedIPs: allowlist }, null, 2));
+            fs.writeFileSync('public/json/allowlist.json', JSON.stringify({ allowedIPs: allowlist }, null, 2));
           }
           console.log(colors.green(`Appended IP: ${ip}`));
           console.log(colors.cyan(`Current allowlist: ${JSON.stringify(allowlist, null, 2)}`));

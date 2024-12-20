@@ -14,15 +14,15 @@
             .then(data => {
                 const moviesContainer = document.getElementById('movies');
                 data.results.forEach(movie => {
-                    const movieElement = document.createElement('div');
+                    const movieElement = document.createElement('a');
                     movieElement.className = 'movie';
+                    movieElement.href = movie.url;
+                    movieElement.target = '_blank';
                     movieElement.innerHTML = `
-                        <a href="${movie.url}" target="_blank" class="movie-link">
-                            <img src="${movie.poster}" alt="${movie.name}" width="100">
-                            <div class="movie-info">
-                                <span>${movie.name}</span>
-                            </div>
-                        </a>
+                        <img src="${movie.poster}" alt="${movie.name}" width="100">
+                        <div class="movie-info">
+                            <span>${movie.name}</span>
+                        </div>
                     `;
                     moviesContainer.appendChild(movieElement);
                 });

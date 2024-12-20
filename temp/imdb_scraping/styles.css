@@ -33,19 +33,13 @@ body {
     flex-direction: column;
 }
 
-.movie-link {
-    color: white;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-}
-
-.movie-link:hover {
-    text-decoration: none;
-}
-
 @media (max-width: 600px) {
     .movies-grid {
         grid-template-columns: 1fr;
     }
+}
+
+a {
+    color: white;
+    text-decoration: none;
 }

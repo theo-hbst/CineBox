@@ -7,7 +7,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="/public/css/style.css" rel="stylesheet" />
     <link href="/public/css/additional.css" rel="stylesheet" />
-    <link href="/public/css/burgermenu.css" rel="stylesheet" />
     <link rel="shortcut icon" href="/public/imgs/icon.ico" />
     <link rel="apple-touch-icon" href="/public/imgs/icon.ico" />
     <meta name="author" content="Théo" />
@@ -197,11 +196,6 @@
       <main class="flex-1 py-10 px-5 sm:px-10">
         <header
           class="font-bold text-lg flex items-center gap-x-3 md:hidden mb-12">
-
-
-
-
-
           <label class="hamburger">
             <input type="checkbox">
             <svg viewBox="0 0 32 32">
@@ -209,11 +203,6 @@
               <path class="line" d="M7 16 27 16"></path>
             </svg>
           </label>
-
-
-
-
-
           <svg
             class="h-8 w-8 fill-red-600 shrink-0"
             xmlns="http://www.w3.org/2000/svg"
@@ -229,7 +218,7 @@
         </header>
 
         <section>
-          <div class="flex flex-col justify-between mt-4 bg-black/10 bg-blend-multiply rounded-3xl h-80 overflow-hidden bg-cover bg-center px-7 pt-4 pb-6 text-white" style="background-image: url(&quot;/public/imgs/movies.jpg&quot;)">
+          <div class="flex flex-col justify-between mt-4 bg-black/10 bg-blend-multiply rounded-3xl h-70 overflow-hidden bg-cover bg-center px-7 pt-4 pb-6 text-white" style="background-image: url(&quot;/public/imgs/movies.jpg&quot;)">
             <div class="flex -space-x-1 items-center"></div>
 
             <div class="bg-gradient-to-r from-black/30 to-transparent -mx-7 -mb-6 px-7 pb-6 pt-2">
@@ -239,6 +228,48 @@
               </div>
             </div>
           </div>
+          <div class="scraper_results">
+          <h1 class="moviesText">Films du moment</h1>
+          <div id="movies" class="movies-grid"></div>
+          <script>
+              fetch('/public/json/popular_movies.json')
+                  .then(response => response.json())
+                  .then(data => {
+                      const moviesContainer = document.getElementById('movies');
+                      data.results.forEach(movie => {
+                          const movieElement = document.createElement('a');
+                          movieElement.style = "color: #fff";
+                          movieElement.className = 'movie';
+                          movieElement.href = movie.url;
+                          movieElement.target = '_blank';
+                          movieElement.innerHTML = `
+                              <img src="${movie.poster}" alt="${movie.name}" width="100">
+                              <div class="movie-info">
+                                    <span style="font-size: 1.2em;">${movie.name}</span>
+                                  <span>Année: ${movie.year}</span>
+                              </div>
+                          `;
+                          moviesContainer.appendChild(movieElement);
+                      });
+                  })
+                  .catch(error => console.error('Error loading JSON:', error));
+          </script>
+          <button id="refresh-scraper" class="refresh-scraper-btn">Rafraîchir le scraping</button>
+          </div>
+          <script>
+              document.getElementById('refresh-scraper').addEventListener('click', () => {
+                  fetch('/scraper', { method: 'POST' })
+                      .then(response => {
+                          if (response.ok) {
+                              alert('Scraping rafraîchi avec succès!');
+                              location.reload();
+                          } else {
+                              alert('Erreur lors du rafraîchissement du scraping.');
+                          }
+                      })
+                      .catch(error => console.error('Error:', error));
+              });
+          </script>
         </section>
       </main>
     </div>

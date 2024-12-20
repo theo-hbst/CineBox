@@ -20,3 +20,4 @@ if text_input:
     os.system(f'mkdir {text_input}')
 else:
     print("No text input received. No command was executed.")
+print("Done!")
