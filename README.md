@@ -5,7 +5,4 @@ Serveur perso pour le streaming et le téléchargement de films et séries
 
 - Ajouter un menu déroulant pour mobile (burger menu) -> ajout du bouton dans home.html (uniquement) sans fonctionnalités particulières
 
-- gérer le téléchargement de torrents/magnets avec le menu radio (1 pour torrent et 1 pour magnet, partie récupération magnet dans fichier .py fonctionnelle)
-+ trouver moyen de telecharger ces torrents avec un CLI
-
-- déplacer des dossiers/fichiers avec filemanager (dossier de téléchargement par défaut: /Media/downloads)
+- trouver moyen de telecharger ces torrents avec un CLI -> récupération magnet/fichier fonctionnel

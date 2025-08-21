@@ -225,15 +225,15 @@
           </div>
         </header>
         
-        <section>
-          <h1>Gestionnaire de fichiers</h1>
-          <div id="file-manager">
+        <section class="bg-white dark:bg-zinc-900 rounded-xl p-6 shadow-lg">
+          <h1 class="text-gray-900 dark:text-white text-2xl font-bold mb-6">Gestionnaire de fichiers</h1>
+          <div id="file-manager" class="bg-gray-50 dark:bg-zinc-800 rounded-lg">
             <div id="back-button-container" style="position: absolute; top: 10px; left: 10px;">
               <button id="back-button" style="display: none;">Retour</button>
             </div>
             <!-- Les fichiers et dossiers seront affichés ici -->
           </div>
-          <div id="current-path" style="position: fixed; bottom: 10px; right: 10px;">
+          <div id="current-path" class="bg-red-600 text-white px-3 py-1 rounded-full text-sm font-medium">
             <!-- Le chemin actuel sera affiché ici -->
           </div>
           <script src="/public/js/filemanager.js"></script>

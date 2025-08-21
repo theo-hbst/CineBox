@@ -208,20 +208,322 @@
         </header>
 
         <section>
-          <h1>Formulaire de test</h1>
-          <form id="test-form" action="/submit_form" method="POST">
-            <label>
-              <input type="radio" name="option" value="option1"> Option 1
-            </label>
-            <label>
-              <input type="radio" name="option" value="option2"> Option 2
-            </label>
-            <label>
-              <input type="text" name="text_input" placeholder="Entrez le lien MAGNET">
-            </label>
-            <button type="submit">Télécharger</button>
+          <h1>Gestionnaire de téléchargements</h1>
+          <form id="test-form" method="POST" enctype="multipart/form-data">
+            <div class="form-options">
+              <label class="option-label">
+                <input type="radio" name="option" value="upload" id="option-upload"> Uploader un fichier
+              </label>
+              <label class="option-label">
+                <input type="radio" name="option" value="magnet" id="option-magnet"> Lien MAGNET
+              </label>
+            </div>
+            
+            <div id="upload-zone" class="input-zone" style="display: none;">
+              <label class="upload-label">
+                <input type="file" name="file_upload" id="file-input" accept="*/*">
+                <span class="upload-text">Cliquez pour sélectionner un fichier ou glissez-déposez</span>
+              </label>
+              <div id="file-info" class="file-info" style="display: none;"></div>
+            </div>
+            
+            <div id="magnet-zone" class="input-zone" style="display: none;">
+              <label class="text-label">
+                <input type="text" name="text_input" placeholder="Entrez le lien MAGNET" class="text-input">
+              </label>
+            </div>
+            
+            <button type="submit" class="submit-btn" disabled>Télécharger</button>
           </form>
         </section>
+
+        <script>
+          document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('test-form');
+            const uploadOption = document.getElementById('option-upload');
+            const magnetOption = document.getElementById('option-magnet');
+            const uploadZone = document.getElementById('upload-zone');
+            const magnetZone = document.getElementById('magnet-zone');
+            const submitBtn = document.querySelector('.submit-btn');
+            const fileInput = document.getElementById('file-input');
+            const fileInfo = document.getElementById('file-info');
+            const textInput = magnetZone.querySelector('input');
+
+            // Handle option changes
+            function updateFormDisplay() {
+              if (uploadOption.checked) {
+                uploadZone.style.display = 'block';
+                magnetZone.style.display = 'none';
+                form.action = '/upload_file';
+                textInput.value = '';
+                checkFormValidity();
+              } else if (magnetOption.checked) {
+                uploadZone.style.display = 'none';
+                magnetZone.style.display = 'block';
+                form.action = '/submit_form';
+                fileInput.value = '';
+                fileInfo.style.display = 'none';
+                checkFormValidity();
+              } else {
+                uploadZone.style.display = 'none';
+                magnetZone.style.display = 'none';
+                submitBtn.disabled = true;
+              }
+            }
+
+            function checkFormValidity() {
+              if (uploadOption.checked && fileInput.files.length > 0) {
+                submitBtn.disabled = false;
+              } else if (magnetOption.checked && textInput.value.trim()) {
+                submitBtn.disabled = false;
+              } else {
+                submitBtn.disabled = true;
+              }
+            }
+
+            uploadOption.addEventListener('change', updateFormDisplay);
+            magnetOption.addEventListener('change', updateFormDisplay);
+
+            // File input handling
+            fileInput.addEventListener('change', function() {
+              const file = this.files[0];
+              if (file) {
+                fileInfo.innerHTML = `
+                  <p><strong>Fichier sélectionné:</strong> ${file.name}</p>
+                  <p><strong>Taille:</strong> ${(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                `;
+                fileInfo.style.display = 'block';
+              } else {
+                fileInfo.style.display = 'none';
+              }
+              checkFormValidity();
+            });
+
+            // Text input handling
+            textInput.addEventListener('input', checkFormValidity);
+
+            // Drag and drop functionality
+            const uploadLabel = document.querySelector('.upload-label');
+            
+            uploadLabel.addEventListener('dragover', function(e) {
+              e.preventDefault();
+              this.classList.add('drag-over');
+            });
+
+            uploadLabel.addEventListener('dragleave', function(e) {
+              e.preventDefault();
+              this.classList.remove('drag-over');
+            });
+
+            uploadLabel.addEventListener('drop', function(e) {
+              e.preventDefault();
+              this.classList.remove('drag-over');
+              const files = e.dataTransfer.files;
+              if (files.length > 0) {
+                fileInput.files = files;
+                fileInput.dispatchEvent(new Event('change'));
+              }
+            });
+
+            // Form submission handling
+            form.addEventListener('submit', function(e) {
+              if (uploadOption.checked) {
+                if (fileInput.files.length === 0) {
+                  e.preventDefault();
+                  alert('Veuillez sélectionner un fichier');
+                  return;
+                }
+                // Add hidden input for upload option
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'option';
+                hiddenInput.value = 'upload';
+                form.appendChild(hiddenInput);
+              } else if (magnetOption.checked) {
+                if (!textInput.value.trim()) {
+                  e.preventDefault();
+                  alert('Veuillez entrer un lien MAGNET');
+                  return;
+                }
+                form.action = '/submit_form';
+                form.method = 'POST';
+                form.enctype = 'application/x-www-form-urlencoded';
+              } else {
+                e.preventDefault();
+                alert('Veuillez sélectionner une option');
+                return;
+              }
+              
+              document.cookie = "formSubmitted=true; path=/";
+            });
+
+            // Check for success message
+            if (document.cookie.split(';').some((item) => item.trim().startsWith('formSubmitted='))) {
+              setTimeout(() => {
+                if (uploadOption.checked) {
+                  alert('Fichier uploadé avec succès!');
+                } else {
+                  alert('Lien MAGNET ajouté avec succès!');
+                }
+                document.cookie = "formSubmitted=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+              }, 100);
+            }
+          });
+        </script>
+
+        <style>
+          .form-options {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+          }
+
+          .option-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            color: #374151;
+            cursor: pointer;
+          }
+
+          .dark .option-label {
+            color: #f9fafb;
+          }
+
+          .option-label input[type="radio"] {
+            width: 16px;
+            height: 16px;
+            accent-color: #dc2626;
+          }
+
+          .input-zone {
+            margin-bottom: 20px;
+          }
+
+          .upload-label {
+            display: block;
+            width: 100%;
+            padding: 40px 20px;
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background-color: #f9fafb;
+          }
+
+          .dark .upload-label {
+            background-color: #374151;
+            border-color: #6b7280;
+          }
+
+          .upload-label:hover,
+          .upload-label.drag-over {
+            border-color: #dc2626;
+            background-color: #fef2f2;
+          }
+
+          .dark .upload-label:hover,
+          .dark .upload-label.drag-over {
+            background-color: #450a0a;
+          }
+
+          .upload-label input[type="file"] {
+            display: none;
+          }
+
+          .upload-text {
+            color: #6b7280;
+            font-size: 16px;
+          }
+
+          .dark .upload-text {
+            color: #d1d5db;
+          }
+
+          .text-label {
+            display: block;
+            width: 100%;
+          }
+
+          .text-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            background-color: white;
+            color: #111827;
+          }
+
+          .dark .text-input {
+            background-color: #374151;
+            border-color: #6b7280;
+            color: #f9fafb;
+          }
+
+          .text-input:focus {
+            outline: none;
+            border-color: #dc2626;
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+          }
+
+          .file-info {
+            margin-top: 15px;
+            padding: 12px;
+            background-color: #f0f9ff;
+            border-radius: 6px;
+            border-left: 4px solid #dc2626;
+          }
+
+          .dark .file-info {
+            background-color: #1e293b;
+          }
+
+          .file-info p {
+            margin: 4px 0;
+            color: #374151;
+          }
+
+          .dark .file-info p {
+            color: #e2e8f0;
+          }
+
+          .submit-btn {
+            padding: 12px 24px;
+            background-color: #dc2626;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Montserrat', sans-serif;
+          }
+
+          .submit-btn:hover:not(:disabled) {
+            background-color: #b91c1c;
+          }
+
+          .submit-btn:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+          }
+
+          h1 {
+            color: #111827;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            font-family: 'Montserrat', sans-serif;
+          }
+
+          .dark h1 {
+            color: #f9fafb;
+          }
+        </style>
       </main>
     </div>
   </body>
