@@ -218,60 +218,189 @@
         </header>
 
         <section>
-          <div class="flex flex-col justify-between mt-4 bg-black/10 bg-blend-multiply rounded-3xl h-70 overflow-hidden bg-cover bg-center px-7 pt-4 pb-6 text-white" style="background-image: url(&quot;/public/imgs/movies.jpg&quot;)">
-            <div class="flex -space-x-1 items-center"></div>
-
-            <div class="bg-gradient-to-r from-black/30 to-transparent -mx-7 -mb-6 px-7 pb-6 pt-2">
-              <span class="uppercase text-3xl font-semibold drop-shadow-lg">Accédez au catalogue pour voir un film</span>
-              <div class="mt-4 flex space-x-3 items-center">
-                <a href="movies.html" class="start_streaming_btn">Commencer le streaming</a>
-              </div>
-            </div>
-          </div>
           <div class="scraper_results">
           <h1 class="moviesText">Films du moment</h1>
+          <div id="loading-indicator" style="display: none; color: #fff; text-align: center; padding: 20px;">
+            🔄 Mise à jour des films en cours...
+          </div>
           <div id="movies" class="movies-grid"></div>
           <script>
-              fetch('/public/json/popular_movies.json')
-                  .then(response => response.json())
-                  .then(data => {
-                      const moviesContainer = document.getElementById('movies');
-                      data.results.forEach(movie => {
-                          const movieElement = document.createElement('a');
-                          movieElement.style = "color: #fff";
-                          movieElement.className = 'movie';
-                          movieElement.href = movie.url;
-                          movieElement.target = '_blank';
-                          movieElement.innerHTML = `
-                              <img src="${movie.poster}" alt="${movie.name}" width="100">
-                              <div class="movie-info">
-                                    <span style="font-size: 1.2em;">${movie.name}</span>
-                                  <span>Année: ${movie.year}</span>
-                              </div>
-                          `;
-                          moviesContainer.appendChild(movieElement);
+              let scrapingCheckInterval;
+
+              // Background scraping function
+              function runBackgroundScraping() {
+                  // Afficher l'indicateur de chargement
+                  document.getElementById('loading-indicator').style.display = 'block';
+                  
+                  fetch('/scraper', { method: 'POST' })
+                      .then(response => {
+                          if (response.ok) {
+                              console.log('Background scraping started successfully');
+                              // Commencer à vérifier le statut
+                              startScrapingStatusCheck();
+                          } else {
+                              console.log('Background scraping failed to start, loading existing data');
+                              document.getElementById('loading-indicator').style.display = 'none';
+                              loadMovies();
+                          }
+                      })
+                      .catch(error => {
+                          console.error('Background scraping error:', error);
+                          document.getElementById('loading-indicator').style.display = 'none';
+                          loadMovies();
                       });
-                  })
-                  .catch(error => console.error('Error loading JSON:', error));
+              }
+
+              // Fonction pour vérifier le statut du scraping
+              function startScrapingStatusCheck() {
+                  scrapingCheckInterval = setInterval(() => {
+                      fetch('/scraper/status')
+                          .then(response => response.json())
+                          .then(status => {
+                              if (!status.scrapingInProgress && status.hasData) {
+                                  // Le scraping est terminé
+                                  clearInterval(scrapingCheckInterval);
+                                  document.getElementById('loading-indicator').style.display = 'none';
+                                  loadMovies();
+                                  console.log('Scraping completed, movies updated');
+                              }
+                          })
+                          .catch(error => {
+                              console.error('Error checking scraping status:', error);
+                              clearInterval(scrapingCheckInterval);
+                              document.getElementById('loading-indicator').style.display = 'none';
+                              loadMovies();
+                          });
+                  }, 2000); // Vérifier toutes les 2 secondes
+              }
+
+              // Function to load movies
+              function loadMovies() {
+                  fetch('/public/json/scrapedMovies.json')
+                      .then(response => {
+                          if (!response.ok) {
+                              throw new Error('No scraped data available');
+                          }
+                          return response.json();
+                      })
+                      .then(data => {
+                          console.log('Loaded data structure:', data);
+                          const moviesContainer = document.getElementById('movies');
+                          moviesContainer.innerHTML = ''; // Clear existing content
+                          
+                          // Handle different possible data structures
+                          let movies = [];
+                          if (data.results && Array.isArray(data.results)) {
+                              movies = data.results;
+                          } else if (Array.isArray(data)) {
+                              movies = data;
+                          } else if (data.movies && Array.isArray(data.movies)) {
+                              movies = data.movies;
+                          } else {
+                              console.error('Unknown data structure:', data);
+                          }
+                          
+                          console.log('Movies array:', movies);
+                          
+                          if (movies && movies.length > 0) {
+                              movies.forEach(movie => {
+                                  const movieElement = document.createElement('a');
+                                  movieElement.style = "color: #fff";
+                                  movieElement.className = 'movie';
+                                  movieElement.href = movie.url || movie.link || '#';
+                                  movieElement.target = '_blank';
+                                  movieElement.innerHTML = `
+                                      <img src="${movie.poster || movie.image || movie.thumbnail || '/public/imgs/placeholder.jpg'}" alt="${movie.name || movie.title}" width="100">
+                                      <div class="movie-info">
+                                            <span style="font-size: 1.2em;">${movie.name || movie.title}</span>
+                                          <span>Année: ${movie.year || movie.release_year || 'N/A'}</span>
+                                      </div>
+                                  `;
+                                  moviesContainer.appendChild(movieElement);
+                              });
+                          } else {
+                              moviesContainer.innerHTML = '<p style="color: #fff; text-align: center;">Aucun film disponible pour le moment.</p>';
+                          }
+                      })
+                      .catch(error => {
+                          console.error('Error loading movies:', error);
+                          const moviesContainer = document.getElementById('movies');
+                          moviesContainer.innerHTML = '<p style="color: #fff; text-align: center;">Erreur lors du chargement des films. Le scraping est peut-être en cours...</p>';
+                      });
+              }
+
+              // Run background scraping when page loads
+              document.addEventListener('DOMContentLoaded', function() {
+                  // Charger les données existantes d'abord
+                  loadMovies();
+                  // Puis lancer le scraping en arrière-plan
+                  runBackgroundScraping();
+              });
+
+              // Nettoyer l'intervalle quand on quitte la page
+              window.addEventListener('beforeunload', function() {
+                  if (scrapingCheckInterval) {
+                      clearInterval(scrapingCheckInterval);
+                  }
+              });
           </script>
           <button id="refresh-scraper" class="refresh-scraper-btn">Rafraîchir le scraping</button>
           </div>
           <script>
               document.getElementById('refresh-scraper').addEventListener('click', () => {
+                  const button = document.getElementById('refresh-scraper');
+                  const originalText = button.textContent;
+                  button.textContent = 'Scraping en cours...';
+                  button.disabled = true;
+                  
+                  // Afficher l'indicateur de chargement
+                  document.getElementById('loading-indicator').style.display = 'block';
+                  
                   fetch('/scraper', { method: 'POST' })
                       .then(response => {
                           if (response.ok) {
-                              alert('Scraping rafraîchi avec succès!');
-                              location.reload();
+                              console.log('Manual scraping started');
+                              startScrapingStatusCheck();
+                              // Le bouton sera réactivé quand le scraping sera terminé
+                              scrapingCheckInterval = setInterval(() => {
+                                  fetch('/scraper/status')
+                                      .then(response => response.json())
+                                      .then(status => {
+                                          if (!status.scrapingInProgress) {
+                                              clearInterval(scrapingCheckInterval);
+                                              document.getElementById('loading-indicator').style.display = 'none';
+                                              button.textContent = originalText;
+                                              button.disabled = false;
+                                              loadMovies();
+                                              alert('Scraping rafraîchi avec succès!');
+                                          }
+                                      })
+                                      .catch(error => {
+                                          console.error('Error:', error);
+                                          clearInterval(scrapingCheckInterval);
+                                          document.getElementById('loading-indicator').style.display = 'none';
+                                          button.textContent = originalText;
+                                          button.disabled = false;
+                                          alert('Erreur lors du rafraîchissement du scraping.');
+                                      });
+                              }, 2000);
                           } else {
-                              alert('Erreur lors du rafraîchissement du scraping.');
+                              throw new Error('Scraping request failed');
                           }
                       })
-                      .catch(error => console.error('Error:', error));
+                      .catch(error => {
+                          console.error('Error:', error);
+                          document.getElementById('loading-indicator').style.display = 'none';
+                          button.textContent = originalText;
+                          button.disabled = false;
+                          alert('Erreur lors du rafraîchissement du scraping.');
+                      });
               });
           </script>
         </section>
+        <h1 class="text-center text-gray-500 text-sm mt-4">© 1990-2025 by IMDb.com, Inc</h1>
       </main>
     </div>
+    
   </body>
 </html>

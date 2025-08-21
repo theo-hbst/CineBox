@@ -15,6 +15,7 @@
     "express-brute": "^1.0.1",
     "express-rate-limit": "^7.1.5",
     "joi": "^17.11.0",
+    "multer": "^2.0.2",
     "os": "^0.1.2",
     "socket.io": "^4.7.4",
     "underscore": "^1.13.6",

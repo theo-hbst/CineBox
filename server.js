@@ -14,8 +14,9 @@ const { hideBin } = require('yargs/helpers');
 const colors = require('colors');
 const readline = require('readline');
 const { spawn } = require('child_process');
+const multer = require('multer');
 
-const version = '1.3.5';
+const version = '1.4';
 
 const app = express();
 const server = http.createServer(app);
@@ -58,6 +59,29 @@ const argv = yargs(hideBin(process.argv))
   .argv;
 
 const BASE_DIR = __dirname + '/Media';
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const uploadPath = path.join(BASE_DIR, 'downloads', 'torrentInfo');
+    // Create downloads directory if it doesn't exist
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+    cb(null, uploadPath);
+  },
+  filename: function (req, file, cb) {
+    // Keep original filename
+    cb(null, file.originalname);
+  }
+});
+
+const upload = multer({ 
+  storage: storage,
+  limits: {
+    fileSize: 100 * 1024 * 1024 // 100MB limit
+  }
+});
 
 let allowlist = [];
 if (argv.allowlist) {
@@ -155,7 +179,7 @@ app.post('/submit_form', (req, res) => {
   console.log(colors.green(`Option: ${option}`));
   console.log(colors.green(`Text Input: ${textInput}`));
 
-  const pythonProcessForm = spawn('python', ['public/python/handle_form.py', option, textInput]);
+  const pythonProcessForm = spawn('python', ['public/python/handleForm.py', option, textInput]);
 
   console.log(colors.yellow('Python engine started'));
   
@@ -171,7 +195,7 @@ app.post('/submit_form', (req, res) => {
     console.log(colors.yellow(`child process exited with code ${code}`));
     console.log(colors.green('Form data processed successfully'));
     res.redirect('public/pages/content/torrent.html');
-    });
+  });
 
   io.on('connection', (socket) => {
     socket.on('pageLoaded', (page) => {
@@ -181,12 +205,36 @@ app.post('/submit_form', (req, res) => {
 });
 
 app.post('/scraper', (req, res) => {
-  const pythonProcessScraper = spawn('python', ['public/python/scrape.py']);
+  const pythonProcessScraper = spawn('python', ['public/python/scraper.py']);
 
   console.log(colors.yellow('Python engine started'));
 
   pythonProcessScraper.stdout.on('data', (data) => {
-    console.log(colors.yellow(`stdout: ${data}`));
+    const output = data.toString();
+    console.log(colors.yellow(`stdout: ${output}`));
+    
+    // Vérifier si le scraping est terminé
+    if (output.includes('SCRAPING_COMPLETE')) {
+      // Échanger les fichiers
+      const oldFile = 'public/json/scrapedMovies.json';
+      const tempFile = 'public/json/scrapedMoviesTemp.json';
+      
+      try {
+        // Supprimer l'ancien fichier s'il existe
+        if (fs.existsSync(oldFile)) {
+          fs.unlinkSync(oldFile);
+          console.log(colors.green('Old scraping file removed'));
+        }
+        
+        // Renommer le fichier temporaire
+        if (fs.existsSync(tempFile)) {
+          fs.renameSync(tempFile, oldFile);
+          console.log(colors.green('Scraping file updated successfully'));
+        }
+      } catch (error) {
+        console.error(colors.red(`Error swapping files: ${error}`));
+      }
+    }
   });
 
   pythonProcessScraper.stderr.on('data', (data) => {
@@ -196,6 +244,21 @@ app.post('/scraper', (req, res) => {
   pythonProcessScraper.on('close', (code) => {
     console.log(colors.yellow(`child process exited with code ${code}`));
     res.send('Scraper process completed');
+  });
+});
+
+// Nouvel endpoint pour vérifier si le scraping est terminé
+app.get('/scraper/status', (req, res) => {
+  const oldFile = 'public/json/scrapedMovies.json';
+  const tempFile = 'public/json/scrapedMoviesTemp.json';
+  
+  const isScrapingInProgress = fs.existsSync(tempFile);
+  const hasData = fs.existsSync(oldFile);
+  
+  res.json({
+    scrapingInProgress: isScrapingInProgress,
+    hasData: hasData,
+    timestamp: Date.now()
   });
 });
 
@@ -258,6 +321,41 @@ app.post('/rename', (req, res) => {
   fs.renameSync(fullOldPath, fullNewPath);
   console.log(colors.yellow(`Renamed: ${oldPath} to ${newPath}`));
   res.sendStatus(204);
+});
+
+app.post('/move', (req, res) => {
+  const sourcePath = req.body.sourcePath;
+  const destinationPath = req.body.destinationPath;
+  const fileName = path.basename(sourcePath);
+  
+  const fullSourcePath = path.join(BASE_DIR, sourcePath);
+  const fullDestinationPath = path.join(BASE_DIR, destinationPath, fileName);
+  
+  try {
+    // Vérifier que le dossier de destination existe
+    const destDir = path.join(BASE_DIR, destinationPath);
+    if (!fs.existsSync(destDir)) {
+      return res.status(400).json({ error: 'Destination directory does not exist' });
+    }
+    
+    // Vérifier que le fichier source existe
+    if (!fs.existsSync(fullSourcePath)) {
+      return res.status(400).json({ error: 'Source file does not exist' });
+    }
+    
+    // Vérifier qu'on ne déplace pas un dossier dans lui-même
+    if (fs.statSync(fullSourcePath).isDirectory() && fullDestinationPath.startsWith(fullSourcePath)) {
+      return res.status(400).json({ error: 'Cannot move directory into itself' });
+    }
+    
+    // Déplacer le fichier/dossier
+    fs.renameSync(fullSourcePath, fullDestinationPath);
+    console.log(colors.yellow(`Moved: ${sourcePath} to ${destinationPath}/${fileName}`));
+    res.json({ success: true, message: 'File moved successfully' });
+  } catch (error) {
+    console.error(colors.red(`Error moving file: ${error}`));
+    res.status(500).json({ error: 'Failed to move file' });
+  }
 });
 
 app.get('/download', (req, res) => {
@@ -335,6 +433,39 @@ app.use('/series', express.static(path.join(BASE_DIR, 'series'), {
     }
   }
 }));
+
+app.post('/upload_file', upload.single('file_upload'), (req, res) => {
+  console.log(colors.green('File upload request received'));
+  
+  if (!req.file) {
+    console.log(colors.red('No file uploaded'));
+    return res.status(400).send('No file uploaded');
+  }
+
+  const uploadedFile = req.file;
+  console.log(colors.green(`File uploaded: ${uploadedFile.filename}`));
+  console.log(colors.green(`File size: ${(uploadedFile.size / 1024 / 1024).toFixed(2)} MB`));
+  console.log(colors.green(`File saved to: ${uploadedFile.path}`));
+
+  // Call Python script to handle the uploaded file
+  const pythonProcessForm = spawn('python', ['public/python/handleForm.py', 'upload', uploadedFile.path]);
+
+  console.log(colors.yellow('Python engine started for file upload'));
+  
+  pythonProcessForm.stdout.on('data', (data) => {
+    console.log(colors.yellow(`stdout: ${data}`));
+  });
+
+  pythonProcessForm.stderr.on('data', (data) => {
+    console.error(colors.red(`stderr: ${data}`));
+  });
+
+  pythonProcessForm.on('close', (code) => {
+    console.log(colors.yellow(`child process exited with code ${code}`));
+    console.log(colors.green('File upload processed successfully'));
+    res.redirect('/public/pages/content/torrent.html');
+  });
+});
 
 app.use((req, res) => {
   let filePath = path.join(__dirname, req.url === "/" ? "index.html" : req.url);

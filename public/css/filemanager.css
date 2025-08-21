@@ -1,31 +1,143 @@
 #file-manager {
-    margin: 20px;
+    padding: 20px;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.dark #file-manager {
+    background-color: #18181b;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
 }
 
 #back-button-container {
-    text-align: left;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
 }
 
 .file-item {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 10px;
-    border-bottom: 1px solid #333;
+    justify-content: space-between;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    background-color: #f9fafb;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+}
+
+.dark .file-item {
+    background-color: #27272a;
 }
 
 .file-item:hover {
-    background-color: #333;
+    background-color: #f3f4f6;
+    transform: translateY(-1px);
+}
+
+.dark .file-item:hover {
+    background-color: #3f3f46;
+}
+
+.file-item.selected {
+    background-color: #fef2f2;
+    border-color: #dc2626;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+    animation: selectAnimation 0.3s ease;
+}
+
+.dark .file-item.selected {
+    background-color: #450a0a;
+    border-color: #dc2626;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2);
 }
 
 .file-name {
-    flex-grow: 1;
+    font-weight: 500;
+    color: #111827;
+    cursor: pointer;
+    flex: 1;
+    font-size: 15px;
+}
+
+.dark .file-name {
+    color: #f9fafb;
+}
+
+.file-name:hover {
+    color: #dc2626;
+}
+
+.dark .file-name:hover {
+    color: #fca5a5;
 }
 
 .file-actions {
     display: flex;
-    gap: 10px;
+    gap: 8px;
+    align-items: center;
+}
+
+.file-actions button {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    font-family: 'Montserrat', sans-serif;
+    background-color: #dc2626;
+    color: white;
+}
+
+.file-actions button:first-child {
+    background-color: #dc2626;
+    color: white;
+}
+
+.file-actions button:first-child:hover {
+    background-color: #b91c1c;
+}
+
+.file-actions button:nth-child(2) {
+    background-color: #6b7280;
+    color: white;
+}
+
+.file-actions button:nth-child(2):hover {
+    background-color: #4b5563;
+}
+
+.file-actions button:last-child {
+    background-color: #dc2626;
+    color: white;
+}
+
+.file-actions button:last-child:hover {
+    background-color: #b91c1c;
+}
+
+.file-actions input {
+    padding: 6px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 13px;
+    width: 150px;
+    background-color: white;
+    color: #111827;
+}
+
+.dark .file-actions input {
+    background-color: #374151;
+    border-color: #4b5563;
+    color: #f9fafb;
+}
+
+.file-actions input:focus {
+    outline: none;
+    border-color: #dc2626;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
 }
 
 button {
@@ -48,6 +160,7 @@ input[type="text"] {
     padding: 5px;
     outline: none;
 }
+
 section {
     color: #ffffff;
 }
@@ -58,4 +171,173 @@ section h1 {
     line-height: 1.2;
     letter-spacing: -0.05em;
     margin-bottom: 50px;
+}
+
+.move-controls {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: white;
+    border-radius: 12px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    border: 1px solid #e5e7eb;
+}
+
+.dark .move-controls {
+    background-color: #18181b;
+    border-color: #3f3f46;
+}
+
+.move-controls button {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    font-family: 'Montserrat', sans-serif;
+    background-color: #dc2626;
+    color: white;
+}
+
+.move-controls button:first-child {
+    background-color: #dc2626;
+    color: white;
+}
+
+.move-controls button:first-child:hover {
+    background-color: #b91c1c;
+}
+
+.move-controls button:not(:first-child) {
+    background-color: #dc2626;
+    color: white;
+}
+
+.move-controls button:not(:first-child):hover {
+    background-color: #b91c1c;
+}
+
+.move-controls button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.selected-count {
+    color: #6b7280;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.dark .selected-count {
+    color: #d1d5db;
+}
+
+#back-button {
+    padding: 10px 16px;
+    background-color: #6b7280;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    font-family: 'Montserrat', sans-serif;
+}
+
+#back-button:hover {
+    background-color: #4b5563;
+}
+
+#current-path {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #dc2626;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+.dark #current-path {
+    background-color: #dc2626;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+}
+
+h1 {
+    color: #111827;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.dark h1 {
+    color: #f9fafb;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .move-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .move-controls button {
+        width: 100%;
+        margin-bottom: 8px;
+    }
+    
+    .file-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .file-actions {
+        width: 100%;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+    
+    .file-actions input {
+        width: 100%;
+        margin-top: 8px;
+    }
+    
+    #current-path {
+        position: relative;
+        bottom: auto;
+        right: auto;
+        margin-top: 20px;
+        display: inline-block;
+    }
+}
+
+/* Animation pour les éléments sélectionnés */
+@keyframes selectAnimation {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+}
+
+/* Styles pour les dossiers vs fichiers */
+.file-name::before {
+    margin-right: 8px;
+    font-size: 16px;
+}
+
+.file-item[data-is-directory="true"] .file-name::before {
+    content: "📁";
+}
+
+.file-item[data-is-directory="false"] .file-name::before {
+    content: "📄";
 }
