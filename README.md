@@ -3,6 +3,7 @@ Serveur perso pour le streaming et le téléchargement de films et séries
 
 ## Todo-list
 
-- Ajouter un menu déroulant pour mobile (burger menu) -> ajout du bouton dans home.html (uniquement) sans fonctionnalités particulières
+- Régler menu déroulant mobile (bug logo overlay) + appliquer a toutes les autres pages
+   -> Peut être décaler le logo de la sidebar mobile uniquement vers la droite pour laisser de la place au bouton burger
 
 - trouver moyen de telecharger ces torrents avec un CLI -> récupération magnet/fichier fonctionnel
