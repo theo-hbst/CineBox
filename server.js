@@ -375,7 +375,12 @@ app.get('/movies', (req, res) => {
     }
 
     files.forEach(filename => {
-      if (filename.endsWith('.mp4') || filename.endsWith('.mkv')) {
+      if (
+        filename.endsWith('.mp4') ||
+        filename.endsWith('.mkv') ||
+        filename.endsWith('.mov') ||
+        filename.endsWith('.mp3')
+      ) {
         const thumbnailPath = path.join(moviesFolder, 'src', filename.replace(/\.[^/.]+$/, '') + '.jpg');
         const movie = {
           name: filename,
@@ -395,6 +400,10 @@ app.use('/movies', express.static(path.join(BASE_DIR, 'movies'), {
       res.setHeader('Content-Type', 'video/mp4');
     } else if (path.endsWith('.mkv')) {
       res.setHeader('Content-Type', 'video/x-matroska');
+    } else if (path.endsWith('.mov')) {
+      res.setHeader('Content-Type', 'video/quicktime');
+    } else if (path.endsWith('.mp3')) {
+      res.setHeader('Content-Type', 'audio/mpeg');
     }
   }
 }));
@@ -430,6 +439,10 @@ app.use('/series', express.static(path.join(BASE_DIR, 'series'), {
       res.setHeader('Content-Type', 'video/mp4');
     } else if (path.endsWith('.mkv')) {
       res.setHeader('Content-Type', 'video/x-matroska');
+    } else if (path.endsWith('.mov')) {
+      res.setHeader('Content-Type', 'video/quicktime');
+    } else if (path.endsWith('.mp3')) {
+      res.setHeader('Content-Type', 'audio/mpeg');
     }
   }
 }));

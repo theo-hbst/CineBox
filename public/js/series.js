@@ -42,6 +42,22 @@ document.addEventListener('DOMContentLoaded', () => {
           const seriesGrid = document.createElement('div');
           seriesGrid.className = 'series-grid';
 
+          if (data.length === 0) {
+            // Centrage vertical et horizontal
+            const msg = document.createElement('div');
+            msg.style.color = '#fff';
+            msg.style.display = 'flex';
+            msg.style.justifyContent = 'center';
+            msg.style.alignItems = 'center';
+            msg.style.height = '60vh';
+            msg.style.fontSize = '1.3rem';
+            msg.textContent = path === 'series'
+              ? 'Aucune série disponible.'
+              : 'Aucun épisode disponible.';
+            seriesManager.appendChild(msg);
+            return;
+          }
+
           data.forEach(item => {
             const fileItem = document.createElement('div');
             fileItem.className = item.isDirectory ? 'folder-item' : 'episode-item';
@@ -95,7 +111,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
           seriesManager.appendChild(seriesGrid);
         } else {
-          console.error('Data is not an array:', data);
+          // Si data n'est pas un tableau, afficher un message d'erreur
+          const msg = document.createElement('div');
+          msg.style.color = '#fff';
+          msg.style.display = 'flex';
+          msg.style.justifyContent = 'center';
+          msg.style.alignItems = 'center';
+          msg.style.height = '60vh';
+          msg.style.fontSize = '1.3rem';
+          msg.textContent = 'Erreur lors du chargement des séries.';
+          seriesManager.appendChild(msg);
         }
       });
   }
@@ -114,4 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   fetchSeriesFiles(currentPath);
+
+  // Pour le refresh auto toutes les 15s
+  setInterval(() => fetchSeriesFiles(currentPath), 15000);
 });

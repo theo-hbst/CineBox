@@ -4,10 +4,12 @@ Ajouter les fichiers .jpg dans le dossier 'src' avec le même nom que l'episode.
 
 Exemple:
 ```
-/Media/series/NomDeLaSerie/Saison1/
-├── Episode1.mkv
-├── Episode2.mkv
-└── src/
-    ├── Episode1.jpg
-    └── Episode2.jpg
+/Media/series/
+└── NomDeLaSerie/
+    └── Saison1/
+        ├── Episode1.mkv
+        ├── Episode2.mkv
+        └── src/
+            ├── Episode1.jpg
+            └── Episode2.jpg
 ```

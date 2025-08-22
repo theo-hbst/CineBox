@@ -7,6 +7,25 @@ document.addEventListener('DOMContentLoaded', () => {
             const videoPlayer = document.getElementById('videoPlayer');
             const returnButton = document.getElementById('returnButton');
 
+            movieGrid.innerHTML = '';
+            if (!movies || movies.length === 0) {
+                const msg = document.createElement('div');
+                msg.style.color = '#fff';
+                msg.style.display = 'flex';
+                msg.style.justifyContent = 'center';
+                msg.style.alignItems = 'center';
+                msg.style.height = 'calc(100vh - 200px)';
+                msg.style.width = '100%';
+                msg.style.fontSize = '1.3rem';
+                msg.textContent = 'Aucun film disponible.';
+                movieGrid.style.display = 'flex';
+                movieGrid.style.justifyContent = 'center';
+                movieGrid.style.alignItems = 'center';
+                movieGrid.style.height = 'calc(100vh - 200px)';
+                movieGrid.appendChild(msg);
+                return;
+            }
+
             movies.forEach(movie => {
                 const movieItem = document.createElement('div');
                 movieItem.classList.add('movie-item');
