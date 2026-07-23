@@ -1,9 +1,5 @@
-$(document).ready(function () {
-    var username = localStorage.getItem('username');
-
-    if (!username) {
-        // User is not logged in, redirect to index.html
+document.addEventListener('DOMContentLoaded', () => {
+    if (!localStorage.getItem('username')) {
         window.location.href = '/';
-        alert('Vous devez vous connecter pour accéder à cette page');
     }
 });

@@ -9,6 +9,7 @@ const ExpressBrute = require('express-brute');
 const cookieParser = require('cookie-parser');
 const http = require('http');
 const socketIo = require('socket.io');
+const { randomUUID } = require('crypto');
 const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
 const colors = require('colors');
@@ -16,7 +17,7 @@ const readline = require('readline');
 const { spawn } = require('child_process');
 const multer = require('multer');
 
-const version = '1.4';
+const version = '1.5';
 
 const app = express();
 const server = http.createServer(app);
@@ -42,6 +43,10 @@ const argv = yargs(hideBin(process.argv))
     type: 'boolean',
     description: 'Run server on localhost only',
   })
+  .option('no-id', {
+    type: 'boolean',
+    description: 'Run server without the need to authenticate',
+  })
   .option('debug-append', {
     type: 'boolean',
     description: 'Do not append server IPs to allowlist',
@@ -59,6 +64,217 @@ const argv = yargs(hideBin(process.argv))
   .argv;
 
 const BASE_DIR = __dirname + '/Media';
+const TORRENT_DOWNLOAD_DIR = path.join(BASE_DIR, 'downloads');
+const TORRENT_JOB_DIR = path.join(TORRENT_DOWNLOAD_DIR, 'torrentJobs');
+const TORRENT_INFO_DIR = path.join(TORRENT_DOWNLOAD_DIR, 'torrentInfo');
+const ARIA2C_LOCAL_EXE = path.join(__dirname, 'public', 'python', 'aria2c.exe');
+const USERS_FILE = path.join(__dirname, 'public', 'json', 'users.json');
+const PROFILE_PICTURE_DIR = path.join(__dirname, 'public', 'imgs', 'profile-pictures');
+
+const torrentJobs = new Map();
+
+function ensureDirectory(dirPath) {
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true });
+  }
+}
+
+function getAria2Command() {
+  return fs.existsSync(ARIA2C_LOCAL_EXE) ? ARIA2C_LOCAL_EXE : 'aria2c';
+}
+
+function createTorrentJob(type, sourceLabel) {
+  const jobId = randomUUID();
+  const downloadDir = path.join(TORRENT_JOB_DIR, jobId);
+  const infoDir = path.join(TORRENT_INFO_DIR, jobId);
+
+  ensureDirectory(downloadDir);
+  ensureDirectory(infoDir);
+
+  const job = {
+    id: jobId,
+    type,
+    sourceLabel,
+    downloadDir,
+    infoDir,
+    status: 'queued',
+    progress: 0,
+    speed: '',
+    eta: '',
+    message: 'Queued',
+    canceled: false,
+    bufferedOutput: '',
+    process: null,
+    source: '',
+    startedAt: new Date().toISOString(),
+  };
+
+  torrentJobs.set(jobId, job);
+  return job;
+}
+
+function serializeTorrentJob(job) {
+  return {
+    id: job.id,
+    type: job.type,
+    sourceLabel: job.sourceLabel,
+    status: job.status,
+    progress: job.progress,
+    speed: job.speed,
+    eta: job.eta,
+    message: job.message,
+    downloadDir: job.downloadDir,
+    startedAt: job.startedAt,
+  };
+}
+
+function emitTorrentJob(job) {
+  io.emit('torrent:progress', serializeTorrentJob(job));
+}
+
+function cleanupTorrentJob(job) {
+  try {
+    if (job.infoDir && fs.existsSync(job.infoDir)) {
+      fs.rmSync(job.infoDir, { recursive: true, force: true });
+    }
+  } catch (error) {
+    console.error(colors.red(`Failed to clean torrent info dir: ${error}`));
+  }
+
+  try {
+    if (job.downloadDir && fs.existsSync(job.downloadDir)) {
+      fs.rmSync(job.downloadDir, { recursive: true, force: true });
+    }
+  } catch (error) {
+    console.error(colors.red(`Failed to clean torrent download dir: ${error}`));
+  }
+}
+
+function updateTorrentJobFromOutput(job, chunk) {
+  job.bufferedOutput += chunk.toString();
+  const lines = job.bufferedOutput.split(/[\r\n]+/);
+  job.bufferedOutput = lines.pop() || '';
+
+  lines.forEach((line) => {
+    const cleanLine = line.trim();
+    if (!cleanLine) {
+      return;
+    }
+
+    const percentMatch = cleanLine.match(/(\d{1,3}(?:\.\d+)?)%/);
+    if (percentMatch) {
+      job.progress = Math.max(0, Math.min(100, Number(percentMatch[1])));
+    }
+
+    const speedMatch = cleanLine.match(/(?:DL|UL):\s*([^\s\]]+)/i);
+    if (speedMatch) {
+      job.speed = speedMatch[1];
+    }
+
+    const etaMatch = cleanLine.match(/ETA:?\s*([^\s\]]+)/i);
+    if (etaMatch) {
+      job.eta = etaMatch[1];
+    }
+
+    job.message = cleanLine;
+    emitTorrentJob(job);
+  });
+}
+
+function persistTorrentSource(job, sourceName, sourceContent) {
+  fs.writeFileSync(path.join(job.infoDir, sourceName), sourceContent, 'utf-8');
+}
+
+function startTorrentJob(job, source, kind, useInputFile = false) {
+  const aria2Command = getAria2Command();
+  job.source = source;
+  job.status = 'running';
+  job.message = 'Starting aria2c';
+
+  fs.writeFileSync(
+    path.join(job.infoDir, 'metadata.json'),
+    JSON.stringify(
+      {
+        id: job.id,
+        type: kind,
+        source,
+        sourceLabel: job.sourceLabel,
+        startedAt: job.startedAt,
+        downloadDir: job.downloadDir,
+      },
+      null,
+      2,
+    ),
+    'utf-8',
+  );
+
+  const args = [
+    `--dir=${job.downloadDir}`,
+    '--allow-overwrite=true',
+    '--continue=true',
+    '--summary-interval=1',
+    '--show-console-readout=true',
+    '--console-log-level=warn',
+    ...(useInputFile ? [`--input-file=${source}`] : [source]),
+  ];
+
+  try {
+    job.process = spawn(aria2Command, args, {
+      cwd: __dirname,
+      windowsHide: true,
+    });
+  } catch (error) {
+    job.status = 'error';
+    job.message = error.message;
+    emitTorrentJob(job);
+    cleanupTorrentJob(job);
+    torrentJobs.delete(job.id);
+    return;
+  }
+
+  emitTorrentJob(job);
+
+  job.process.stdout.on('data', (data) => updateTorrentJobFromOutput(job, data));
+  job.process.stderr.on('data', (data) => updateTorrentJobFromOutput(job, data));
+
+  job.process.on('error', (error) => {
+    job.status = 'error';
+    job.message = error.message;
+    emitTorrentJob(job);
+    cleanupTorrentJob(job);
+    torrentJobs.delete(job.id);
+  });
+
+  job.process.on('close', (code) => {
+    job.process = null;
+
+    if (job.canceled) {
+      job.status = 'cancelled';
+      job.progress = 0;
+      job.message = 'Download cancelled';
+      emitTorrentJob(job);
+      cleanupTorrentJob(job);
+      torrentJobs.delete(job.id);
+      return;
+    }
+
+    if (code === 0) {
+      job.status = 'completed';
+      job.progress = 100;
+      job.message = 'Download completed';
+      emitTorrentJob(job);
+    } else {
+      job.status = 'error';
+      job.message = `aria2c exited with code ${code}`;
+      emitTorrentJob(job);
+      cleanupTorrentJob(job);
+    }
+
+    torrentJobs.delete(job.id);
+  });
+
+  return job;
+}
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -79,9 +295,81 @@ const storage = multer.diskStorage({
 const upload = multer({ 
   storage: storage,
   limits: {
-    fileSize: 100 * 1024 * 1024 // 100MB limit
+    fileSize: 50 * 1024 * 1024 // 50MB limit
   }
 });
+
+const profilePictureStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    ensureDirectory(PROFILE_PICTURE_DIR);
+    cb(null, PROFILE_PICTURE_DIR);
+  },
+  filename: function (req, file, cb) {
+    cb(null, buildProfilePictureFilename(req.body.username, file.originalname));
+  }
+});
+
+const profilePictureUpload = multer({
+  storage: profilePictureStorage,
+  limits: {
+    fileSize: 5 * 1024 * 1024
+  },
+  fileFilter: function (req, file, cb) {
+    if (!file.mimetype || !file.mimetype.startsWith('image/')) {
+      return cb(new Error('Only image files are allowed.'));
+    }
+
+    cb(null, true);
+  }
+});
+
+function handleProfilePictureUpload(req, res, next) {
+  profilePictureUpload.single('avatar')(req, res, (error) => {
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    return next();
+  });
+}
+
+function readUsersData() {
+  const usersData = JSON.parse(fs.readFileSync(USERS_FILE, 'utf8'));
+
+  if (!Array.isArray(usersData.users)) {
+    usersData.users = [];
+  }
+
+  return usersData;
+}
+
+function writeUsersData(usersData) {
+  fs.writeFileSync(USERS_FILE, JSON.stringify(usersData, null, 2));
+}
+
+function getAvatarUrl(avatarPath) {
+  return avatarPath && typeof avatarPath === 'string' ? avatarPath : null;
+}
+
+function sanitizeProfileUsername(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+}
+
+function buildProfilePictureFilename(username, originalFilename) {
+  const safeUsername = sanitizeProfileUsername(username) || 'user';
+  const fileExtension = path.extname(originalFilename || '').toLowerCase() || '.png';
+  return `${safeUsername}-${Date.now()}-${randomUUID()}${fileExtension}`;
+}
+
+function removeFileIfExists(filePath) {
+  if (filePath && fs.existsSync(filePath)) {
+    fs.unlinkSync(filePath);
+  }
+}
 
 let allowlist = [];
 if (argv.allowlist) {
@@ -114,25 +402,160 @@ app.use(limiter);
 const store = new ExpressBrute.MemoryStore(); // stores state locally, don't use this in production
 const bruteforce = new ExpressBrute(store);
 
-app.post('/auth',
-  bruteforce.prevent, // prevent brute force attacks
-  (req, res, next) => {
-    // validate the input using Joi
-    const schema = Joi.object({
-      username: Joi.string().alphanum().min(3).max(30).required(),
-      password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).required(),
-    });
-    const { error } = schema.validate(req.body);
-    if (error) {
-      res.status(400).send(error.details[0].message);
-      return;
-    }
-    next();
-  }
-);
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.post('/auth', bruteforce.prevent, (req, res) => {
+  const schema = Joi.object({
+    username: Joi.string().min(1).max(30).required(),
+    password: Joi.string().min(1).max(100).required(),
+  });
+
+  const { error } = schema.validate(req.body);
+  if (error) {
+    return res.status(400).json({ error: error.details[0].message });
+  }
+
+  try {
+    const usersData = readUsersData();
+    const userFound = Array.isArray(usersData.users)
+      ? usersData.users.find((user) => user.username === req.body.username && user.password === req.body.password)
+      : null;
+
+    if (!userFound) {
+      return res.status(401).json({ error: 'Nom d\'utilisateur ou mot de passe incorrect.' });
+    }
+
+    return res.json({
+      username: userFound.username,
+      avatarUrl: getAvatarUrl(userFound.avatarUrl),
+    });
+  } catch (error) {
+    console.error(colors.red(`Auth error: ${error.message}`));
+    return res.status(500).json({ error: 'Unable to validate credentials.' });
+  }
+});
+
+app.get('/api/users/:username', (req, res) => {
+  try {
+    const usersData = readUsersData();
+    const user = usersData.users.find((entry) => entry.username === req.params.username);
+
+    if (!user) {
+      return res.status(404).json({ error: 'Utilisateur introuvable.' });
+    }
+
+    return res.json({
+      username: user.username,
+      avatarUrl: getAvatarUrl(user.avatarUrl),
+    });
+  } catch (error) {
+    console.error(colors.red(`Profile lookup error: ${error.message}`));
+    return res.status(500).json({ error: 'Unable to load profile.' });
+  }
+});
+
+app.post('/api/users/avatar', handleProfilePictureUpload, (req, res) => {
+  const username = typeof req.body.username === 'string' ? req.body.username.trim() : '';
+
+  if (!username) {
+    if (req.file) {
+      removeFileIfExists(req.file.path);
+    }
+
+    return res.status(400).json({ error: 'Username is required.' });
+  }
+
+  if (!req.file) {
+    return res.status(400).json({ error: 'No image uploaded.' });
+  }
+
+  try {
+    const usersData = readUsersData();
+    const userIndex = usersData.users.findIndex((entry) => entry.username === username);
+
+    if (userIndex === -1) {
+      removeFileIfExists(req.file.path);
+      return res.status(404).json({ error: 'Utilisateur introuvable.' });
+    }
+
+    const previousAvatarUrl = getAvatarUrl(usersData.users[userIndex].avatarUrl);
+    const avatarUrl = `/public/imgs/profile-pictures/${req.file.filename}`;
+    usersData.users[userIndex].avatarUrl = avatarUrl;
+    writeUsersData(usersData);
+
+    if (previousAvatarUrl) {
+      const previousAvatarPath = path.join(__dirname, previousAvatarUrl.replace('/public/', 'public/'));
+      if (previousAvatarPath !== req.file.path) {
+        removeFileIfExists(previousAvatarPath);
+      }
+    }
+
+    return res.json({
+      username,
+      avatarUrl,
+    });
+  } catch (error) {
+    removeFileIfExists(req.file.path);
+    console.error(colors.red(`Avatar upload error: ${error.message}`));
+    return res.status(500).json({ error: 'Unable to save profile picture.' });
+  }
+});
+
+app.post('/api/users/username', (req, res) => {
+  const schema = Joi.object({
+    currentUsername: Joi.string().min(1).max(30).required(),
+    newUsername: Joi.string().min(1).max(30).required(),
+  });
+
+  const { error } = schema.validate(req.body);
+  if (error) {
+    return res.status(400).json({ error: error.details[0].message });
+  }
+
+  const currentUsername = req.body.currentUsername.trim();
+  const newUsername = req.body.newUsername.trim();
+
+  if (currentUsername === newUsername) {
+    try {
+      const usersData = readUsersData();
+      const currentUser = usersData.users.find((entry) => entry.username === currentUsername);
+
+      return res.json({
+        username: currentUsername,
+        avatarUrl: getAvatarUrl(currentUser && currentUser.avatarUrl),
+      });
+    } catch (error) {
+      console.error(colors.red(`Username lookup error: ${error.message}`));
+      return res.status(500).json({ error: 'Unable to load username.' });
+    }
+  }
+
+  try {
+    const usersData = readUsersData();
+    const currentUserIndex = usersData.users.findIndex((entry) => entry.username === currentUsername);
+
+    if (currentUserIndex === -1) {
+      return res.status(404).json({ error: 'Utilisateur introuvable.' });
+    }
+
+    const usernameAlreadyExists = usersData.users.some((entry) => entry.username === newUsername);
+    if (usernameAlreadyExists) {
+      return res.status(409).json({ error: 'Ce nom d\'utilisateur est déjà utilisé.' });
+    }
+
+    usersData.users[currentUserIndex].username = newUsername;
+    writeUsersData(usersData);
+
+    return res.json({
+      username: newUsername,
+      avatarUrl: getAvatarUrl(usersData.users[currentUserIndex].avatarUrl),
+    });
+  } catch (error) {
+    console.error(colors.red(`Username update error: ${error.message}`));
+    return res.status(500).json({ error: 'Unable to update username.' });
+  }
+});
 
 app.post('/server/stop', (req, res) => {
   console.log(colors.red('Stopping server...'));
@@ -172,60 +595,30 @@ app.post('/server/append', (req, res) => {
   }
 });
 
-app.post('/submit_form', (req, res) => {
-  const option = req.body.option;
-  const textInput = req.body.text_input;
-
-  console.log(colors.green(`Option: ${option}`));
-  console.log(colors.green(`Text Input: ${textInput}`));
-
-  const pythonProcessForm = spawn('python', ['public/python/handleForm.py', option, textInput]);
-
-  console.log(colors.yellow('Python engine started'));
-  
-  pythonProcessForm.stdout.on('data', (data) => {
-    console.log(colors.yellow(`stdout: ${data}`));
-  });
-
-  pythonProcessForm.stderr.on('data', (data) => {
-    console.error(colors.red(`stderr: ${data}`));
-  });
-
-  pythonProcessForm.on('close', (code) => {
-    console.log(colors.yellow(`child process exited with code ${code}`));
-    console.log(colors.green('Form data processed successfully'));
-    res.redirect('public/pages/content/torrent.html');
-  });
-
-  io.on('connection', (socket) => {
-    socket.on('pageLoaded', (page) => {
-    socket.emit('showAlert', 'You have been redirected to the torrent page.');
-    });
-  });
-});
 
 app.post('/scraper', (req, res) => {
-  const pythonProcessScraper = spawn('python', ['public/python/scraper.py']);
+  const pythonExecutable = process.env.PYTHON_EXECUTABLE || process.env.PYTHON || 'python';
+  const pythonProcessScraper = spawn(pythonExecutable, ['public/python/scraper.py']);
 
   console.log(colors.yellow('Python engine started'));
 
   pythonProcessScraper.stdout.on('data', (data) => {
     const output = data.toString();
     console.log(colors.yellow(`stdout: ${output}`));
-    
+
     // Vérifier si le scraping est terminé
     if (output.includes('SCRAPING_COMPLETE')) {
       // Échanger les fichiers
       const oldFile = 'public/json/scrapedMovies.json';
       const tempFile = 'public/json/scrapedMoviesTemp.json';
-      
+
       try {
         // Supprimer l'ancien fichier s'il existe
         if (fs.existsSync(oldFile)) {
           fs.unlinkSync(oldFile);
           console.log(colors.green('Old scraping file removed'));
         }
-        
+
         // Renommer le fichier temporaire
         if (fs.existsSync(tempFile)) {
           fs.renameSync(tempFile, oldFile);
@@ -251,10 +644,10 @@ app.post('/scraper', (req, res) => {
 app.get('/scraper/status', (req, res) => {
   const oldFile = 'public/json/scrapedMovies.json';
   const tempFile = 'public/json/scrapedMoviesTemp.json';
-  
+
   const isScrapingInProgress = fs.existsSync(tempFile);
   const hasData = fs.existsSync(oldFile);
-  
+
   res.json({
     scrapingInProgress: isScrapingInProgress,
     hasData: hasData,
@@ -381,10 +774,12 @@ app.get('/movies', (req, res) => {
         filename.endsWith('.mov') ||
         filename.endsWith('.mp3')
       ) {
-        const thumbnailPath = path.join(moviesFolder, 'src', filename.replace(/\.[^/.]+$/, '') + '.jpg');
+        const baseName = filename.replace(/\.[^/.]+$/, '');
+        const thumbnailPath = path.join(moviesFolder, 'src', `${baseName}.jpg`);
         const movie = {
           name: filename,
-          thumbnail: fs.existsSync(thumbnailPath) ? thumbnailPath : 'black-thumbnail.jpg'
+          thumbnail: fs.existsSync(thumbnailPath) ? `/movies/src/${baseName}.jpg` : null,
+          videoUrl: `/movies/${filename}`,
         };
         movies.push(movie);
       }
@@ -447,37 +842,72 @@ app.use('/series', express.static(path.join(BASE_DIR, 'series'), {
   }
 }));
 
-app.post('/upload_file', upload.single('file_upload'), (req, res) => {
-  console.log(colors.green('File upload request received'));
-  
+function handleTorrentUploadRequest(req, res) {
   if (!req.file) {
     console.log(colors.red('No file uploaded'));
-    return res.status(400).send('No file uploaded');
+    return res.status(400).json({ error: 'No file uploaded' });
   }
 
   const uploadedFile = req.file;
-  console.log(colors.green(`File uploaded: ${uploadedFile.filename}`));
-  console.log(colors.green(`File size: ${(uploadedFile.size / 1024 / 1024).toFixed(2)} MB`));
-  console.log(colors.green(`File saved to: ${uploadedFile.path}`));
+  const job = createTorrentJob('upload', uploadedFile.originalname || uploadedFile.filename);
+  const storedTorrentPath = path.join(job.infoDir, path.basename(uploadedFile.originalname || uploadedFile.filename));
 
-  // Call Python script to handle the uploaded file
-  const pythonProcessForm = spawn('python', ['public/python/handleForm.py', 'upload', uploadedFile.path]);
+  try {
+    fs.copyFileSync(uploadedFile.path, storedTorrentPath);
+    fs.unlinkSync(uploadedFile.path);
+  } catch (error) {
+    cleanupTorrentJob(job);
+    torrentJobs.delete(job.id);
+    return res.status(500).json({ error: `Failed to stage torrent file: ${error.message}` });
+  }
 
-  console.log(colors.yellow('Python engine started for file upload'));
-  
-  pythonProcessForm.stdout.on('data', (data) => {
-    console.log(colors.yellow(`stdout: ${data}`));
+  console.log(colors.green(`File upload received for job ${job.id}`));
+  startTorrentJob(job, storedTorrentPath, 'upload');
+
+  return res.json({
+    job: serializeTorrentJob(job),
   });
+}
 
-  pythonProcessForm.stderr.on('data', (data) => {
-    console.error(colors.red(`stderr: ${data}`));
-  });
+app.post('/upload_file', upload.single('file_upload'), handleTorrentUploadRequest);
 
-  pythonProcessForm.on('close', (code) => {
-    console.log(colors.yellow(`child process exited with code ${code}`));
-    console.log(colors.green('File upload processed successfully'));
-    res.redirect('/public/pages/content/torrent.html');
+app.post('/api/torrent/upload', upload.single('file_upload'), handleTorrentUploadRequest);
+
+app.get('/api/torrent/status/:jobId', (req, res) => {
+  const job = torrentJobs.get(req.params.jobId);
+
+  if (!job) {
+    return res.status(404).json({ error: 'Torrent job not found' });
+  }
+
+  return res.json({
+    job: serializeTorrentJob(job),
   });
+});
+
+app.post('/api/torrent/cancel/:jobId', (req, res) => {
+  const job = torrentJobs.get(req.params.jobId);
+
+  if (!job) {
+    return res.status(404).json({ error: 'Torrent job not found' });
+  }
+
+  if (job.status === 'completed' || job.status === 'cancelled' || job.status === 'error') {
+    cleanupTorrentJob(job);
+    torrentJobs.delete(job.id);
+    return res.json({ job: serializeTorrentJob(job), cancelled: true });
+  }
+
+  job.canceled = true;
+  job.status = 'cancelling';
+  job.message = 'Cancelling download';
+  emitTorrentJob(job);
+
+  if (job.process && !job.process.killed) {
+    job.process.kill();
+  }
+
+  return res.json({ job: serializeTorrentJob(job), cancelled: true });
 });
 
 app.use((req, res) => {

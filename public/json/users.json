@@ -1,6 +1,14 @@
 {
   "users": [
-    { "username": "Théo", "password": "theo081008!h" },
-    { "username": "a", "password": "a"}
+    {
+      "username": "Théo",
+      "password": "theo081008!h",
+      "avatarUrl": null
+    },
+    {
+      "username": "a",
+      "password": "a",
+      "avatarUrl": "/public/imgs/profile-pictures/a-1784843076234-1a5981a2-c098-4648-b807-5218149becdc.png"
+    }
   ]
 }

@@ -1,173 +1,197 @@
 {
-  "result_count": 46,
+  "result_count": 24,
   "results": [
     {
-      "id": "tt26581740",
-      "name": "Weapons",
+      "id": "tt33764258",
+      "name": "The Odyssey",
+      "year": 2026,
+      "poster": "https://m.media-amazon.com/images/M/MV5BNTcyNmJlZmQtNDUwYy00NDBjLTg1NGQtYTY2Y2UxMWM3NmI1XkEyXkFqcGc@._V1_.jpg",
+      "url": "https://www.imdb.com/title/tt33764258/",
+      "rank": 1
+    },
+    {
+      "id": "tt37287335",
+      "name": "Obsession",
       "year": 2025,
-      "url": "https://www.imdb.com/title/tt26581740/?ref_=sr_t_1",
-      "poster": "https://m.media-amazon.com/images/M/MV5BNTBhNWJjZWItYzY3NS00M2NkLThmOWYtYTlmNzBmN2UxZWFjXkEyXkFqcGc@._V1_QL75_UY133_CR8,0,90,133_.jpg"
+      "poster": "https://m.media-amazon.com/images/M/MV5BYzc1NWUwMDgtNGZlMS00ZmYzLWIzMzktNmMxMmY1MTUzNWExXkEyXkFqcGc@._V1_.jpg",
+      "url": "https://www.imdb.com/title/tt37287335/",
+      "rank": 2
     },
     {
-      "id": "tt5950044",
-      "name": "Superman",
-      "year": 2025,
-      "url": "https://www.imdb.com/title/tt5950044/?ref_=sr_t_2",
-      "poster": "https://m.media-amazon.com/images/M/MV5BOGMwZGJiM2EtMzEwZC00YTYzLWIxNzYtMmJmZWNlZjgxZTMwXkEyXkFqcGc@._V1_QL75_UY133_CR8,0,90,133_.jpg"
+      "id": "tt26657236",
+      "name": "Backrooms",
+      "year": 2026,
+      "poster": "https://m.media-amazon.com/images/M/MV5BYzQyYjZmMjctMzIyZi00MDI0LWJhNGQtMzQ3MTFlNDgwNGM5XkEyXkFqcGc@._V1_.jpg",
+      "url": "https://www.imdb.com/title/tt26657236/",
+      "rank": 3
     },
     {
-      "id": "tt31567422",
-      "name": "Night Always Comes",
-      "year": 2025,
-      "url": "https://www.imdb.com/title/tt31567422/?ref_=sr_t_3",
-      "poster": "https://m.media-amazon.com/images/M/MV5BNjI4NDI1ZDEtN2Q5Zi00ZGU4LWJmNzctNjI1NzdlOWQxMGNkXkEyXkFqcGc@._V1_QL75_UX90_CR0,0,90,133_.jpg"
+      "id": "tt12042730",
+      "name": "Project Hail Mary",
+      "year": 2026,
+      "poster": "https://m.media-amazon.com/images/M/MV5BNTkwNzJiYTctNzI3NC00NjE1LTlhYjktY2Q5MTdmMWFmNzcxXkEyXkFqcGc@._V1_.jpg",
+      "url": "https://www.imdb.com/title/tt12042730/",
+      "rank": 4
     },
     {
-      "id": "tt31868189",
-      "name": "Happy Gilmore 2",
-      "year": 2025,
-      "url": "https://www.imdb.com/title/tt31868189/?ref_=sr_t_4",
-      "poster": "https://m.media-amazon.com/images/M/MV5BYTQyNTRmYjItMDBjYi00YWNhLWEwMmQtNzJhODNiNjEzOWJlXkEyXkFqcGc@._V1_QL75_UX90_CR0,0,90,133_.jpg"
+      "id": "tt32565993",
+      "name": "The Sheep Detectives",
+      "year": 2026,
+      "poster": "https://m.media-amazon.com/images/M/MV5BNTFmZWI4YmMtNmQ0ZC00ZGQwLTk1OWEtZjAyZmIzOGY0MGFiXkEyXkFqcGc@._V1_.jpg",
+      "url": "https://www.imdb.com/title/tt32565993/",
+      "rank": 5
     },
     {
-      "id": "tt3402138",
-      "name": "The Naked Gun",
-      "year": 2025,
-      "url": "https://www.imdb.com/title/tt3402138/?ref_=sr_t_5",
-      "poster": "https://m.media-amazon.com/images/M/MV5BNGFlNDhkNzItZjgxNC00OGYzLWFjZDAtZTJmNDY5ZmEyZDc0XkEyXkFqcGc@._V1_QL75_UX90_CR0,0,90,133_.jpg"
+      "id": "tt11995650",
+      "name": "I Play Rocky",
+      "year": 2026,
+      "poster": "https://m.media-amazon.com/images/M/MV5BNDZlN2IyYjUtM2FhMi00OTQ0LTk5YjktNTdiZGM1ZDg3NzIxXkEyXkFqcGc@._V1_.jpg",
+      "url": "https://www.imdb.com/title/tt11995650/",
+      "rank": 6
     },
     {
-      "id": "tt28996126",
-      "name": "Nobody 2",
-      "year": 2025,
-      "url": "https://www.imdb.com/title/tt28996126/?ref_=sr_t_6",
-      "poster": "https://m.media-amazon.com/images/M/MV5BOWViZjhjYjQtZDI1MC00MWMyLTlhZTktNmIzY2Y0ZWVkMWFhXkEyXkFqcGc@._V1_QL75_UX90_CR0,4,90,133_.jpg"
+      "id": "tt0332452",
+      "name": "Troy",
+      "year": 2004,
+      "poster": "https://m.media-amazon.com/images/M/MV5BMTk5MzU1MDMwMF5BMl5BanBnXkFtZTcwNjczODMzMw@@._V1_.jpg",
+      "url": "https://www.imdb.com/title/tt0332452/",
+      "rank": 7
     },
     {
-      "id": "tt31036941",
-      "name": "Jurassic World: Rebirth",
-      "year": 2025,
-      "url": "https://www.imdb.com/title/tt31036941/?ref_=sr_t_7",
-      "poster": "https://m.media-amazon.com/images/M/MV5BZWU3ZGU1NmItY2Q4OC00OWRlLThlNWYtODBkN2E4NmU1OTc1XkEyXkFqcGc@._V1_QL75_UX90_CR0,0,90,133_.jpg"
+      "id": "tt14173636",
+      "name": "The Invite",
+      "year": 2026,
+      "poster": "https://m.media-amazon.com/images/M/MV5BMjI0MzJjMjctNmQzZi00Y2U4LWEwZGItMmE3NDUzNzk1YzY3XkEyXkFqcGc@._V1_.jpg",
+      "url": "https://www.imdb.com/title/tt14173636/",
+      "rank": 8
     },
     {
-      "id": "tt31184028",
-      "name": "Together",
-      "year": 2025,
-      "url": "https://www.imdb.com/title/tt31184028/?ref_=sr_t_8",
-      "poster": "https://m.media-amazon.com/images/M/MV5BOWI1Mzg0OWUtNDYxYy00Mzk3LTgxMjMtYWYxZjJhMjI4NDcyXkEyXkFqcGc@._V1_QL75_UX90_CR0,0,90,133_.jpg"
+      "id": "tt31170389",
+      "name": "Evil Dead Burn",
+      "year": 2026,
+      "poster": "https://m.media-amazon.com/images/M/MV5BZTljMTZjZTItZjMzZi00NDBhLWFmMzAtOGNiNTlhY2MxMzg5XkEyXkFqcGc@._V1_.jpg",
+      "url": "https://www.imdb.com/title/tt31170389/",
+      "rank": 9
     },
     {
-      "id": "tt10676052",
-      "name": "The Fantastic Four: First Steps",
-      "year": 2025,
-      "url": "https://www.imdb.com/title/tt10676052/?ref_=sr_t_9",
-      "poster": "https://m.media-amazon.com/images/M/MV5BOGM5MzA3MDAtYmEwMi00ZDNiLTg4MDgtMTZjOTc0ZGMyNTIwXkEyXkFqcGc@._V1_QL75_UX90_CR0,0,90,133_.jpg"
+      "id": "tt27419466",
+      "name": "Moana",
+      "year": 2026,
+      "poster": "https://m.media-amazon.com/images/M/MV5BMTQ1OTQ2Y2UtMzllNS00ODFiLWFkNGItNGRjOWRlMjIwNTRlXkEyXkFqcGc@._V1_.jpg",
+      "url": "https://www.imdb.com/title/tt27419466/",
+      "rank": 10
     },
     {
-      "id": "tt14205554",
-      "name": "KPop Demon Hunters",
-      "year": 2025,
-      "url": "https://www.imdb.com/title/tt14205554/?ref_=sr_t_10",
-      "poster": "https://m.media-amazon.com/images/M/MV5BNTBiYWJlMjQtOTIyMy00NTY4LWFhOWItOWZhNzc3NGMyMjc2XkEyXkFqcGc@._V1_QL75_UX90_CR0,0,90,133_.jpg"
+      "id": "tt41617470",
+      "name": "Desire",
+      "year": 2026,
+      "poster": "https://m.media-amazon.com/images/M/MV5BN2UwYjQ5NTQtZjdjOC00ZDA1LWIxY2EtNDQ4M2FjZDE5YjJiXkEyXkFqcGc@._V1_.jpg",
+      "url": "https://www.imdb.com/title/tt41617470/",
+      "rank": 11
     },
     {
-      "id": "tt31176520",
-      "name": "Eddington",
-      "year": 2025,
-      "url": "https://www.imdb.com/title/tt31176520/?ref_=sr_t_11",
-      "poster": "https://m.media-amazon.com/images/M/MV5BNmM0Yzc1ZjAtZTg4My00NDI3LWEwMzAtY2ZkNzMxMWMwOTFlXkEyXkFqcGc@._V1_QL75_UX90_CR0,0,90,133_.jpg"
+      "id": "tt31450459",
+      "name": "Digger",
+      "year": 2026,
+      "poster": "https://m.media-amazon.com/images/M/MV5BN2E0YTg1M2YtOGQyYi00NDFkLTk3NzUtYmEyNTZhYThhZDQ0XkEyXkFqcGc@._V1_.jpg",
+      "url": "https://www.imdb.com/title/tt31450459/",
+      "rank": 12
     },
     {
-      "id": "tt31956415",
-      "name": "Freakier Friday",
-      "year": 2025,
-      "url": "https://www.imdb.com/title/tt31956415/?ref_=sr_t_12",
-      "poster": "https://m.media-amazon.com/images/M/MV5BMDUzNTczZGQtYTgzNC00NDEzLThjMTEtMTBiYWYzNzMzZGIxXkEyXkFqcGc@._V1_QL75_UX90_CR0,1,90,133_.jpg"
+      "id": "tt34477910",
+      "name": "Descendants: Wicked Wonderland",
+      "year": 2026,
+      "poster": "https://m.media-amazon.com/images/M/MV5BNjNjODhkYTEtZjkxNi00NzY0LTg3MDktNDRmZDg2NDcxYmNiXkEyXkFqcGc@._V1_.jpg",
+      "url": "https://www.imdb.com/title/tt34477910/",
+      "rank": 13
     },
     {
-      "id": "tt13186306",
-      "name": "War of the Worlds",
-      "year": 2025,
-      "url": "https://www.imdb.com/title/tt13186306/?ref_=sr_t_13",
-      "poster": "https://m.media-amazon.com/images/M/MV5BOWVlZDUzNTgtYzcxNC00OTYyLThlZjYtZDc1MTM2ZmI1Y2IzXkEyXkFqcGc@._V1_QL75_UX90_CR0,1,90,133_.jpg"
+      "id": "tt22084616",
+      "name": "Spider-Man: Brand New Day",
+      "year": 2026,
+      "poster": "https://m.media-amazon.com/images/M/MV5BOWNjYWM3NWItOGE0ZS00MWRjLThiZWEtYjc4ZmNmMmU5ZTVmXkEyXkFqcGc@._V1_.jpg",
+      "url": "https://www.imdb.com/title/tt22084616/",
+      "rank": 14
     },
     {
-      "id": "tt31193180",
-      "name": "Sinners",
-      "year": 2025,
-      "url": "https://www.imdb.com/title/tt31193180/?ref_=sr_t_14",
-      "poster": "https://m.media-amazon.com/images/M/MV5BZmI2ZWY2ZWEtODBkNy00Njg2LWFmYTgtYTIzZGYwYTdhY2M2XkEyXkFqcGc@._V1_QL75_UX90_CR0,0,90,133_.jpg"
+      "id": "tt0816692",
+      "name": "Interstellar",
+      "year": 2014,
+      "poster": "https://m.media-amazon.com/images/M/MV5BYzdjMDAxZGItMjI2My00ODA1LTlkNzItOWFjMDU5ZDJlYWY3XkEyXkFqcGc@._V1_.jpg",
+      "url": "https://www.imdb.com/title/tt0816692/",
+      "rank": 15
     },
     {
-      "id": "tt7888964",
-      "name": "Nobody",
-      "year": 2021,
-      "url": "https://www.imdb.com/title/tt7888964/?ref_=sr_t_15",
-      "poster": "https://m.media-amazon.com/images/M/MV5BNmNlZDY2YTAtZGNmZS00ZDRmLThhZWQtMWUwNWQwMzUwMTY3XkEyXkFqcGc@._V1_QL75_UX90_CR0,5,90,133_.jpg"
+      "id": "tt15047880",
+      "name": "Disclosure Day",
+      "year": 2026,
+      "poster": "https://m.media-amazon.com/images/M/MV5BMTgwNDI1ZjctYWNmMS00MTJhLTg1ZWItMzI1Yjk5NjZkYWFkXkEyXkFqcGc@._V1_.jpg",
+      "url": "https://www.imdb.com/title/tt15047880/",
+      "rank": 16
     },
     {
-      "id": "tt10548174",
-      "name": "28 Years Later",
-      "year": 2025,
-      "url": "https://www.imdb.com/title/tt10548174/?ref_=sr_t_16",
-      "poster": "https://m.media-amazon.com/images/M/MV5BNjgwYTI0YjctMWYzNS00MmI1LWI5YTctNmE1YjBkNDFlNWMxXkEyXkFqcGc@._V1_QL75_UY133_CR8,0,90,133_.jpg"
+      "id": "tt15398776",
+      "name": "Oppenheimer",
+      "year": 2023,
+      "poster": "https://m.media-amazon.com/images/M/MV5BN2JkMDc5MGQtZjg3YS00NmFiLWIyZmQtZTJmNTM5MjVmYTQ4XkEyXkFqcGc@._V1_.jpg",
+      "url": "https://www.imdb.com/title/tt15398776/",
+      "rank": 17
     },
     {
-      "id": "tt30253473",
-      "name": "Materialists",
-      "year": 2025,
-      "url": "https://www.imdb.com/title/tt30253473/?ref_=sr_t_17",
-      "poster": "https://m.media-amazon.com/images/M/MV5BNmQxMTI1YmEtOGY3Yi00NzVlLWEzMjAtYTI1NWZkNDFiMDg1XkEyXkFqcGc@._V1_QL75_UX90_CR0,3,90,133_.jpg"
+      "id": "tt29355505",
+      "name": "Toy Story 5",
+      "year": 2026,
+      "poster": "https://m.media-amazon.com/images/M/MV5BZTI1YTBiNmEtYWUxZi00YzFkLWIzNjMtMmZjMmY2NzM0ZWMzXkEyXkFqcGc@._V1_.jpg",
+      "url": "https://www.imdb.com/title/tt29355505/",
+      "rank": 18
     },
     {
-      "id": "tt30445556",
-      "name": "The Pickup",
-      "year": 2025,
-      "url": "https://www.imdb.com/title/tt30445556/?ref_=sr_t_18",
-      "poster": "https://m.media-amazon.com/images/M/MV5BNjNhNzQ5NmQtY2Q1Ny00NzI0LTgyMmUtYjU2MmI5NDE3MGQ0XkEyXkFqcGc@._V1_QL75_UX90_CR0,1,90,133_.jpg"
+      "id": "tt10375624",
+      "name": "Voicemails for Isabelle",
+      "year": 2026,
+      "poster": "https://m.media-amazon.com/images/M/MV5BMTE3MmE2MTYtMjA4OC00ZTIxLWFlNWYtZjk4ZTBkZDdiYzU0XkEyXkFqcGc@._V1_.jpg",
+      "url": "https://www.imdb.com/title/tt10375624/",
+      "rank": 19
     },
     {
-      "id": "tt32246771",
-      "name": "Bring Her Back",
-      "year": 2025,
-      "url": "https://www.imdb.com/title/tt32246771/?ref_=sr_t_19",
-      "poster": "https://m.media-amazon.com/images/M/MV5BZTlhYTk1ZTEtOWY3NC00NWQ5LTlkOTctNjQ3ZDYyZGE5ZWNlXkEyXkFqcGc@._V1_QL75_UX90_CR0,0,90,133_.jpg"
+      "id": "tt32612507",
+      "name": "Lee Cronin's The Mummy",
+      "year": 2026,
+      "poster": "https://m.media-amazon.com/images/M/MV5BNWQ1NzI2YTUtN2E0ZS00YzVmLTkxNjktMWIzNTYwMzkyOTU0XkEyXkFqcGc@._V1_.jpg",
+      "url": "https://www.imdb.com/title/tt32612507/",
+      "rank": 20
     },
     {
-      "id": "tt34365591",
-      "name": "Mahavatar Narsimha",
-      "year": 2024,
-      "url": "https://www.imdb.com/title/tt34365591/?ref_=sr_t_20",
-      "poster": "https://m.media-amazon.com/images/M/MV5BNzhkMjFhOTItMTczNi00YWM1LTlhZjItOTc4OTA0OWVhZTIzXkEyXkFqcGc@._V1_QL75_UY133_CR8,0,90,133_.jpg"
+      "id": "tt27548557",
+      "name": "Dhamaal 4",
+      "year": 2026,
+      "poster": "https://m.media-amazon.com/images/M/MV5BNTI2YTA2YzktMGUwOS00Njk3LWE0M2MtNDE4YTljNDdjNjNlXkEyXkFqcGc@._V1_.jpg",
+      "url": "https://www.imdb.com/title/tt27548557/",
+      "rank": 21
     },
     {
-      "id": "tt16311594",
-      "name": "F1",
-      "year": 2025,
-      "url": "https://www.imdb.com/title/tt16311594/?ref_=sr_t_21",
-      "poster": "https://m.media-amazon.com/images/M/MV5BZTYwYjJhNzYtY2ZiZS00ZmYxLWJkZjctYjRlNGIxYjI3ZTU0XkEyXkFqcGc@._V1_QL75_UX90_CR0,0,90,133_.jpg"
+      "id": "tt11378946",
+      "name": "Michael",
+      "year": 2026,
+      "poster": "https://m.media-amazon.com/images/M/MV5BNzllNmRlN2EtMDQyOC00ODJjLTg4OWQtZDNmNGU3YzlkNjc1XkEyXkFqcGc@._V1_.jpg",
+      "url": "https://www.imdb.com/title/tt11378946/",
+      "rank": 22
     },
     {
-      "id": "tt27425164",
-      "name": "War 2",
-      "year": 2025,
-      "url": "https://www.imdb.com/title/tt27425164/?ref_=sr_t_22",
-      "poster": "https://m.media-amazon.com/images/M/MV5BY2U0MGFkNzctOGI5OC00MzhhLWExYTctZjE5YjY3MzcwYjMzXkEyXkFqcGc@._V1_QL75_UY133_CR4,0,90,133_.jpg"
+      "id": "tt6723592",
+      "name": "Tenet",
+      "year": 2020,
+      "poster": "https://m.media-amazon.com/images/M/MV5BNTIzNDIxMzktMzlkMi00MmUyLWFmMjQtZDgwMjBmOGJmNTI3XkEyXkFqcGc@._V1_.jpg",
+      "url": "https://www.imdb.com/title/tt6723592/",
+      "rank": 23
     },
     {
-      "id": "tt4978342",
-      "name": "My Oxford Year",
-      "year": 2025,
-      "url": "https://www.imdb.com/title/tt4978342/?ref_=sr_t_23",
-      "poster": "https://m.media-amazon.com/images/M/MV5BMWU0YTc0OWYtOWJjNy00ZDYzLWFlMTItMGZkNzM4YjQ5OWQzXkEyXkFqcGc@._V1_QL75_UX90_CR0,0,90,133_.jpg"
-    },
-    {
-      "id": "tt31194612",
-      "name": "Highest 2 Lowest",
-      "year": 2025,
-      "url": "https://www.imdb.com/title/tt31194612/?ref_=sr_t_24",
-      "poster": "https://m.media-amazon.com/images/M/MV5BYjQ2ODhjODgtM2I5My00MzkzLWFhOGQtY2E1NTUyZDM0YjRkXkEyXkFqcGc@._V1_QL75_UY133_CR8,0,90,133_.jpg"
+      "id": "tt0482571",
+      "name": "The Prestige",
+      "year": 2006,
+      "poster": "https://m.media-amazon.com/images/M/MV5BM2Y0YmM5MWYtZTYzNi00ZjU5LTlmOGYtZDQ4ODQyMjAzNjQ2XkEyXkFqcGc@._V1_.jpg",
+      "url": "https://www.imdb.com/title/tt0482571/",
+      "rank": 24
     }
   ]
 }

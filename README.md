@@ -1,8 +1,7 @@
 # MovieShare
-Serveur perso pour le streaming et le téléchargement de films et séries
+Serveur perso pour le streaming, le partage de fichiers et le téléchargement de torrents.
 
-## Todo-list
-
-- Régler bug page d'accueil toujours sélectionnée
-
-- trouver moyen de telecharger ces torrents avec un CLI -> récupération magnet/fichier fonctionnel
+## Todo
+- supprimer commentaires et ajouter uniquement l'essentiel
+- refaire marcher la page admin (erreur app.post)
+- ajouter argument --noid (bypass connection/redirect/logout)

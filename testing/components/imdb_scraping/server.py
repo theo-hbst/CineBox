@@ -1,52 +1,143 @@
-import sys
-import os
-
-# Ajouter le chemin du module PyMovieDb
-sys.path.append(os.path.join(os.path.dirname(__file__), 'PyMovieDb'))
-
-from PyMovieDb import IMDB
+from __future__ import annotations
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
-from http.server import SimpleHTTPRequestHandler, HTTPServer
-import threading
+from pathlib import Path
 
-# Fonction pour démarrer le serveur web
-def start_server():
-    handler = SimpleHTTPRequestHandler
-    httpd = HTTPServer(('localhost', 8000), handler)
-    print("Serving on http://localhost:8000")
-    httpd.serve_forever()
+import requests
 
-# Démarrer le serveur web dans un thread séparé
-server_thread = threading.Thread(target=start_server)
-server_thread.daemon = True
-server_thread.start()
 
-imdb = IMDB()
-res = imdb.popular_movies(genre=None, start_id=1, sort_by=None)
-# returns top 50 popular movies starting from start id
+ROOT = Path(__file__).resolve().parent
+PORT = 8000
+DATA_FILE = ROOT / 'popular_movies.json'
 
-# Remplacer les séquences \n par des retours à la ligne réels
-res_str = json.dumps(res, indent=4)
-res_str = res_str.replace('\\n', '\n')
-res_str = res_str.replace('\\', '')
 
-# Retirer les guillemets doubles au début et à la fin
-if res_str.startswith('"') and res_str.endswith('"'):
-    res_str = res_str[1:-1]
+def fetch_moviemeter_movies(limit: int = 100) -> dict:
+    query = """query MoviemeterChart($first: Int!, $sort: AdvancedTitleSearchSort) {
+    chartTitles(first: $first, chart: { chartType: MOST_POPULAR_MOVIES }, sort: $sort) {
+        edges {
+            currentRank
+            node {
+                id
+                titleText { text }
+                releaseYear { year }
+                primaryImage { url }
+            }
+        }
+    }
+}"""
 
-# Limiter le contenu jusqu'à la ligne 178
-lines = res_str.split('\n')
-limited_content = '\n'.join(lines[:171])
+    payload = {
+        'query': query,
+        'variables': {
+            'first': limit,
+            'sort': {
+                'sortBy': 'POPULARITY',
+                'sortOrder': 'ASC',
+            },
+        },
+    }
 
-# Retirer la virgule après le dernier élément
-if limited_content.endswith(','):
-    limited_content = limited_content[:-1]
+    headers = {
+        'content-type': 'application/json',
+        'origin': 'https://www.imdb.com',
+        'referer': 'https://www.imdb.com/fr/chart/moviemeter/',
+        'user-agent': (
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+            'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
+        ),
+        'accept-language': 'fr-FR,fr;q=0.9,en;q=0.8',
+    }
 
-# Fermer correctement le JSON
-limited_content += '\n  ]\n}'
+    response = requests.post('https://api.graphql.imdb.com/', headers=headers, json=payload, timeout=30)
+    response.raise_for_status()
+    data = response.json()
+    edges = data.get('data', {}).get('chartTitles', {}).get('edges', [])
 
-with open('popular_movies.json', 'w') as f:
-    f.write(limited_content)
+    results = []
+    for edge in edges:
+        if not isinstance(edge, dict):
+            continue
 
-# Garder le script en cours d'exécution
-server_thread.join()
+        node = edge.get('node', {}) or {}
+        title_text = node.get('titleText', {}).get('text') if isinstance(node.get('titleText'), dict) else None
+        release_year = node.get('releaseYear', {}).get('year') if isinstance(node.get('releaseYear'), dict) else None
+        poster = node.get('primaryImage', {}).get('url') if isinstance(node.get('primaryImage'), dict) else None
+        title_id = node.get('id')
+
+        if not title_id or not title_text:
+            continue
+
+        results.append({
+            'id': title_id,
+            'name': title_text,
+            'year': release_year,
+            'poster': poster,
+            'url': f'https://www.imdb.com/title/{title_id}/',
+            'rank': edge.get('currentRank'),
+        })
+
+    return {
+        'result_count': len(results),
+        'results': results,
+    }
+
+
+def write_data_file() -> None:
+    movies = fetch_moviemeter_movies()
+    DATA_FILE.write_text(json.dumps(movies, indent=2, ensure_ascii=False), encoding='utf-8')
+
+
+class DemoHandler(BaseHTTPRequestHandler):
+    def _send(self, status_code: int, content_type: str, body: bytes) -> None:
+        self.send_response(status_code)
+        self.send_header('Content-Type', content_type)
+        self.send_header('Content-Length', str(len(body)))
+        self.send_header('Cache-Control', 'no-store')
+        self.end_headers()
+        self.wfile.write(body)
+
+    def do_GET(self) -> None:  # noqa: N802
+        path = self.path.split('?', 1)[0]
+
+        if path in ('/', '/index.html'):
+            body = (ROOT / 'index.html').read_bytes()
+            self._send(200, 'text/html; charset=utf-8', body)
+            return
+
+        if path == '/styles.css':
+            body = (ROOT / 'styles.css').read_bytes()
+            self._send(200, 'text/css; charset=utf-8', body)
+            return
+
+        if path == '/app.js':
+            body = (ROOT / 'app.js').read_bytes()
+            self._send(200, 'application/javascript; charset=utf-8', body)
+            return
+
+        if path == '/popular_movies.json':
+            if not DATA_FILE.exists():
+                write_data_file()
+            body = DATA_FILE.read_bytes()
+            self._send(200, 'application/json; charset=utf-8', body)
+            return
+
+        self._send(404, 'text/plain; charset=utf-8', b'Not Found')
+
+    def do_POST(self) -> None:  # noqa: N802
+        if self.path == '/refresh':
+            try:
+                write_data_file()
+                body = json.dumps({'ok': True}).encode('utf-8')
+                self._send(200, 'application/json; charset=utf-8', body)
+            except Exception as exc:  # pragma: no cover - user-facing demo path
+                body = json.dumps({'ok': False, 'error': str(exc)}).encode('utf-8')
+                self._send(500, 'application/json; charset=utf-8', body)
+            return
+
+        self._send(404, 'text/plain; charset=utf-8', b'Not Found')
+
+
+if __name__ == '__main__':
+    write_data_file()
+    print(f'Serving demo on http://localhost:{PORT}')
+    ThreadingHTTPServer(('localhost', PORT), DemoHandler).serve_forever()

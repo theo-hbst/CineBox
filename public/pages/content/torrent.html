@@ -12,11 +12,10 @@
     <meta name="author" content="Théo" />
     <title>MovieShare Streaming</title>
     <script defer src="/public/js/cdn.min.js"></script>
-    <script src="/public/js/jquery.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
   </head>
 
   <body class="font-montserrat text-sm bg-white dark:bg-zinc-900">
-    <script src="/public/js/redirect.js"></script>
     <script>
       document.addEventListener('DOMContentLoaded', function() {
         const form = document.getElementById('test-form');
@@ -295,259 +294,116 @@
             </a>
           </div>
         </aside>
-        <section>
-          <h1>Gestionnaire de téléchargements</h1>
-          <form id="test-form" method="POST" enctype="multipart/form-data">
-            <div class="form-options">
-              <label class="option-label">
-                <input type="radio" name="option" value="upload" id="option-upload"> Uploader un fichier
-              </label>
-              <label class="option-label">
-                <input type="radio" name="option" value="magnet" id="option-magnet"> Lien MAGNET
-              </label>
+        <section class="torrent-layout">
+          <div class="torrent-card">
+            <div class="torrent-eyebrow">aria2c en direct</div>
+            <h1>Gestionnaire de téléchargements</h1>
+            <p class="torrent-copy">Choisissez un fichier torrent pour lancer le téléchargement. Le suivi reste en direct et l’annulation nettoie le job courant.</p>
+
+            <form id="torrent-form" class="torrent-form">
+              <div id="upload-zone" class="input-zone" style="display: none;">
+                <label class="upload-label">
+                  <input type="file" name="file_upload" id="file-input" accept=".torrent,application/x-bittorrent">
+                  <span class="upload-text">Cliquez pour sélectionner un fichier ou glissez-déposez</span>
+                </label>
+                <div id="file-info" class="file-info" style="display: none;"></div>
+              </div>
+
+              <div class="torrent-actions">
+                <button type="submit" id="start-btn" class="submit-btn" disabled>Commencer</button>
+                <button type="button" id="cancel-btn" class="cancel-btn" disabled>Annuler</button>
+              </div>
+            </form>
+
+            <div class="progress-panel" aria-live="polite">
+              <div class="progress-track">
+                <div id="progress-fill" class="progress-fill"></div>
+              </div>
+              <div class="progress-meta">
+                <span id="progress-label">En attente d’un lancement</span>
+                <span id="progress-percent">0%</span>
+              </div>
             </div>
-            
-            <div id="upload-zone" class="input-zone" style="display: none;">
-              <label class="upload-label">
-                <input type="file" name="file_upload" id="file-input" accept="*/*">
-                <span class="upload-text">Cliquez pour sélectionner un fichier ou glissez-déposez</span>
-              </label>
-              <div id="file-info" class="file-info" style="display: none;"></div>
-            </div>
-            
-            <div id="magnet-zone" class="input-zone" style="display: none;">
-              <label class="text-label">
-                <input type="text" name="text_input" placeholder="Entrez le lien MAGNET" class="text-input">
-              </label>
-            </div>
-            
-            <button type="submit" class="submit-btn" disabled>Télécharger</button>
-          </form>
+
+            <div id="torrent-message" class="torrent-message"></div>
+          </div>
         </section>
 
-        <script>
-          document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('test-form');
-            const uploadOption = document.getElementById('option-upload');
-            const magnetOption = document.getElementById('option-magnet');
-            const uploadZone = document.getElementById('upload-zone');
-            const magnetZone = document.getElementById('magnet-zone');
-            const submitBtn = document.querySelector('.submit-btn');
-            const fileInput = document.getElementById('file-input');
-            const fileInfo = document.getElementById('file-info');
-            const textInput = magnetZone.querySelector('input');
-
-            // Handle option changes
-            function updateFormDisplay() {
-              if (uploadOption.checked) {
-                uploadZone.style.display = 'block';
-                magnetZone.style.display = 'none';
-                form.action = '/upload_file';
-                textInput.value = '';
-                checkFormValidity();
-              } else if (magnetOption.checked) {
-                uploadZone.style.display = 'none';
-                magnetZone.style.display = 'block';
-                form.action = '/submit_form';
-                fileInput.value = '';
-                fileInfo.style.display = 'none';
-                checkFormValidity();
-              } else {
-                uploadZone.style.display = 'none';
-                magnetZone.style.display = 'none';
-                submitBtn.disabled = true;
-              }
-            }
-
-            function checkFormValidity() {
-              if (uploadOption.checked && fileInput.files.length > 0) {
-                submitBtn.disabled = false;
-              } else if (magnetOption.checked && textInput.value.trim()) {
-                submitBtn.disabled = false;
-              } else {
-                submitBtn.disabled = true;
-              }
-            }
-
-            uploadOption.addEventListener('change', updateFormDisplay);
-            magnetOption.addEventListener('change', updateFormDisplay);
-
-            // File input handling
-            fileInput.addEventListener('change', function() {
-              const file = this.files[0];
-              if (file) {
-                fileInfo.innerHTML = `
-                  <p><strong>Fichier sélectionné:</strong> ${file.name}</p>
-                  <p><strong>Taille:</strong> ${(file.size / 1024 / 1024).toFixed(2)} MB</p>
-                `;
-                fileInfo.style.display = 'block';
-              } else {
-                fileInfo.style.display = 'none';
-              }
-              checkFormValidity();
-            });
-
-            // Text input handling
-            textInput.addEventListener('input', checkFormValidity);
-
-            // Drag and drop functionality
-            const uploadLabel = document.querySelector('.upload-label');
-            
-            uploadLabel.addEventListener('dragover', function(e) {
-              e.preventDefault();
-              this.classList.add('drag-over');
-            });
-
-            uploadLabel.addEventListener('dragleave', function(e) {
-              e.preventDefault();
-              this.classList.remove('drag-over');
-            });
-
-            uploadLabel.addEventListener('drop', function(e) {
-              e.preventDefault();
-              this.classList.remove('drag-over');
-              const files = e.dataTransfer.files;
-              if (files.length > 0) {
-                fileInput.files = files;
-                fileInput.dispatchEvent(new Event('change'));
-              }
-            });
-
-            // Form submission handling
-            form.addEventListener('submit', function(e) {
-              if (uploadOption.checked) {
-                if (fileInput.files.length === 0) {
-                  e.preventDefault();
-                  alert('Veuillez sélectionner un fichier');
-                  return;
-                }
-                // Add hidden input for upload option
-                const hiddenInput = document.createElement('input');
-                hiddenInput.type = 'hidden';
-                hiddenInput.name = 'option';
-                hiddenInput.value = 'upload';
-                form.appendChild(hiddenInput);
-              } else if (magnetOption.checked) {
-                if (!textInput.value.trim()) {
-                  e.preventDefault();
-                  alert('Veuillez entrer un lien MAGNET');
-                  return;
-                }
-                form.action = '/submit_form';
-                form.method = 'POST';
-                form.enctype = 'application/x-www-form-urlencoded';
-              } else {
-                e.preventDefault();
-                alert('Veuillez sélectionner une option');
-                return;
-              }
-              
-              document.cookie = "formSubmitted=true; path=/";
-            });
-
-            // Check for success message
-            if (document.cookie.split(';').some((item) => item.trim().startsWith('formSubmitted='))) {
-              setTimeout(() => {
-                if (uploadOption.checked) {
-                  alert('Fichier uploadé avec succès!');
-                } else {
-                  alert('Lien MAGNET ajouté avec succès!');
-                }
-                document.cookie = "formSubmitted=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-              }, 100);
-            }
-
-            const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
-            const mobileSidebar = document.getElementById('mobile-sidebar');
-            const mobileOverlay = document.getElementById('mobile-overlay');
-
-            function toggleMobileMenu() {
-              if (mobileMenuToggle.checked) {
-                mobileSidebar.classList.add('open');
-                mobileOverlay.classList.add('open');
-                document.body.style.overflow = 'hidden';
-              } else {
-                mobileSidebar.classList.remove('open');
-                mobileOverlay.classList.remove('open');
-                document.body.style.overflow = '';
-              }
-            }
-
-            mobileMenuToggle.addEventListener('change', toggleMobileMenu);
-
-            // Close sidebar when clicking overlay
-            mobileOverlay.addEventListener('click', function() {
-              mobileMenuToggle.checked = false;
-              toggleMobileMenu();
-            });
-
-            // Close sidebar when clicking on a link
-            const sidebarLinks = mobileSidebar.querySelectorAll('a');
-            sidebarLinks.forEach(link => {
-              link.addEventListener('click', function() {
-                mobileMenuToggle.checked = false;
-                toggleMobileMenu();
-              });
-            });
-          });
-        </script>
-
         <style>
-          .form-options {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 20px;
+          .torrent-layout {
+            max-width: 760px;
           }
 
-          .option-label {
-            display: flex;
+          .torrent-card {
+            padding: 1.5rem;
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            border-radius: 1.25rem;
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0.02), rgba(15, 23, 42, 0));
+            box-shadow: 0 18px 60px rgba(15, 23, 42, 0.08);
+          }
+
+          .dark .torrent-card {
+            border-color: rgba(148, 163, 184, 0.12);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
+          }
+
+          .torrent-eyebrow {
+            display: inline-flex;
             align-items: center;
-            gap: 8px;
-            font-weight: 500;
-            color: #374151;
-            cursor: pointer;
+            gap: 0.5rem;
+            padding: 0.35rem 0.7rem;
+            margin-bottom: 1rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            background: rgba(220, 38, 38, 0.1);
+            color: #dc2626;
           }
 
-          .dark .option-label {
-            color: #f9fafb;
+          .torrent-copy {
+            max-width: 62ch;
+            margin-bottom: 1.5rem;
+            color: #475569;
           }
 
-          .option-label input[type="radio"] {
-            width: 16px;
-            height: 16px;
-            accent-color: #dc2626;
+          .dark .torrent-copy {
+            color: #cbd5e1;
+          }
+
+          .torrent-form {
+            display: grid;
+            gap: 1rem;
           }
 
           .input-zone {
-            margin-bottom: 20px;
+            display: grid;
+            gap: 0.75rem;
           }
 
           .upload-label {
             display: block;
             width: 100%;
-            padding: 40px 20px;
-            border: 2px dashed #d1d5db;
-            border-radius: 8px;
+            min-height: 150px;
+            padding: 1.5rem;
+            border: 1px dashed rgba(100, 116, 139, 0.45);
+            border-radius: 1rem;
             text-align: center;
             cursor: pointer;
-            transition: all 0.2s ease;
-            background-color: #f9fafb;
+            transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
+            background: rgba(248, 250, 252, 0.9);
           }
 
           .dark .upload-label {
-            background-color: #374151;
-            border-color: #6b7280;
+            background: rgba(15, 23, 42, 0.45);
+            border-color: rgba(148, 163, 184, 0.3);
           }
 
           .upload-label:hover,
           .upload-label.drag-over {
             border-color: #dc2626;
-            background-color: #fef2f2;
-          }
-
-          .dark .upload-label:hover,
-          .dark .upload-label.drag-over {
-            background-color: #450a0a;
+            background: rgba(220, 38, 38, 0.06);
+            transform: translateY(-1px);
           }
 
           .upload-label input[type="file"] {
@@ -555,96 +411,131 @@
           }
 
           .upload-text {
-            color: #6b7280;
-            font-size: 16px;
+            color: #64748b;
+            font-size: 0.98rem;
           }
 
           .dark .upload-text {
-            color: #d1d5db;
-          }
-
-          .text-label {
-            display: block;
-            width: 100%;
-          }
-
-          .text-input {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            font-size: 14px;
-            background-color: white;
-            color: #111827;
-          }
-
-          .dark .text-input {
-            background-color: #374151;
-            border-color: #6b7280;
-            color: #f9fafb;
-          }
-
-          .text-input:focus {
-            outline: none;
-            border-color: #dc2626;
-            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+            color: #cbd5e1;
           }
 
           .file-info {
-            margin-top: 15px;
-            padding: 12px;
-            background-color: #f0f9ff;
-            border-radius: 6px;
+            padding: 0.85rem 1rem;
+            border-radius: 0.85rem;
             border-left: 4px solid #dc2626;
+            background: rgba(239, 246, 255, 0.95);
+            color: #334155;
           }
 
           .dark .file-info {
-            background-color: #1e293b;
-          }
-
-          .file-info p {
-            margin: 4px 0;
-            color: #374151;
-          }
-
-          .dark .file-info p {
+            background: rgba(30, 41, 59, 0.85);
             color: #e2e8f0;
           }
 
-          .submit-btn {
-            padding: 12px 24px;
-            background-color: #dc2626;
-            color: white;
+          .torrent-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+          }
+
+          .submit-btn,
+          .cancel-btn {
+            padding: 0.85rem 1.2rem;
             border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
+            border-radius: 0.9rem;
+            font-size: 0.95rem;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.2s ease;
-            font-family: 'Montserrat', sans-serif;
+            transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease;
+          }
+
+          .submit-btn {
+            background: #dc2626;
+            color: white;
           }
 
           .submit-btn:hover:not(:disabled) {
-            background-color: #b91c1c;
+            background: #b91c1c;
+            transform: translateY(-1px);
           }
 
-          .submit-btn:disabled {
-            background-color: #9ca3af;
+          .cancel-btn {
+            background: rgba(15, 23, 42, 0.08);
+            color: #0f172a;
+          }
+
+          .dark .cancel-btn {
+            background: rgba(255, 255, 255, 0.08);
+            color: #f8fafc;
+          }
+
+          .submit-btn:disabled,
+          .cancel-btn:disabled {
+            opacity: 0.45;
             cursor: not-allowed;
+            transform: none;
           }
 
-          h1 {
-            color: #111827;
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 24px;
-            font-family: 'Montserrat', sans-serif;
+          .progress-panel {
+            display: grid;
+            gap: 0.55rem;
+            margin-top: 1.25rem;
           }
 
-          .dark h1 {
-            color: #f9fafb;
+          .progress-track {
+            position: relative;
+            height: 0.95rem;
+            overflow: hidden;
+            border-radius: 999px;
+            background: rgba(148, 163, 184, 0.2);
+          }
+
+          .progress-fill {
+            width: 0%;
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, #ef4444, #f97316 70%, #ef4444);
+            background-size: 200% 100%;
+            transition: width 180ms linear;
+          }
+
+          .progress-fill.is-active {
+            animation: torrent-stripes 1.1s linear infinite;
+          }
+
+          .progress-meta {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            font-size: 0.9rem;
+            color: #475569;
+          }
+
+          .dark .progress-meta {
+            color: #cbd5e1;
+          }
+
+          .torrent-message {
+            min-height: 1.5rem;
+            margin-top: 0.85rem;
+            color: #334155;
+          }
+
+          .dark .torrent-message {
+            color: #e2e8f0;
+          }
+
+          @keyframes torrent-stripes {
+            from {
+              background-position: 0% 50%;
+            }
+            to {
+              background-position: 200% 50%;
+            }
           }
         </style>
+
+        <script src="/public/js/torrent.js"></script>
       </main>
     </div>
   </body>

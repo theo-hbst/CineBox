@@ -1,5 +1,6 @@
-<html>
-  <header>
+<!doctype html>
+<html lang="fr">
+  <head>
     <title>Déconnecté</title>
     <link rel="stylesheet" href="/public/css/fonts.css" type="text/css" media="all" />
     <link rel="stylesheet" href="/public/css/login.css" type="text/css" media="all" />
@@ -9,16 +10,13 @@
 
     <meta name="viewport" content="initial-scale=1" />
     <meta charset="utf-8" />
-
-    <script src="/public/js/jquery-1.11.2.min.js"></script>
-    <script src="/public/js/login.js"></script>
-  </header>
+  </head>
 
   <body>
     <script>
-      localStorage.removeItem("username");
-      setTimeout(function() {
-        window.location.href = "/";
+      localStorage.removeItem('username');
+      setTimeout(() => {
+        window.location.href = '/';
       }, 5000);
     </script>
 
