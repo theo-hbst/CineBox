@@ -10,7 +10,7 @@
     <link rel="shortcut icon" href="/public/imgs/icon.ico" />
     <link rel="apple-touch-icon" href="/public/imgs/icon.ico" />
     <meta name="author" content="Théo" />
-    <title>MovieShare Streaming</title>
+    <title>CineBox Streaming</title>
     <script defer src="/public/js/cdn.min.js"></script>
   </head>
 
@@ -29,7 +29,7 @@
             ></path>
           </svg>
           <div class="tracking-wide text-black dark:text-white">
-            MovieShare<span class="text-red-600">.</span>
+            CineBox<span class="text-red-600">.</span>
           </div>
         </div>
 
@@ -197,7 +197,7 @@
             </svg>
           </label>
           <div class="tracking-wide dark:text-white flex-1" style="margin-left: 5rem; margin-top: 0.1rem;">
-            MovieShare<span class="text-red-600">.</span>
+            CineBox<span class="text-red-600">.</span>
           </div>
         </header>
         <!-- Mobile Sidebar Overlay -->
@@ -206,7 +206,7 @@
         <aside class="mobile-sidebar" id="mobile-sidebar">
           <div class="font-bold text-lg flex items-center gap-x-3 mb-8">
             <div class="tracking-wide dark:text-white">
-              MovieShare<span class="text-red-600">.</span>
+              CineBox<span class="text-red-600">.</span>
             </div>
           </div>
           <div class="flex flex-col gap-y-4 text-gray-500 fill-gray-500 text-sm">
@@ -275,36 +275,7 @@
           </form>
         </section>
         <script>
-          console.log("fini")
-          function stopServer() {
-            $.post("/server/stop", function(data) {
-              alert("Le serveur a été arrêté.");
-            }).fail(function() {
-              alert("Erreur lors de l'arrêt du serveur.");
-            });
-          }
-
-          function restartServer() {
-            $.post("/server/restart", function(data) {
-              alert("Le serveur va redémarrer.");
-            }).fail(function() {
-              alert("Erreur lors du redémarrage du serveur.");
-            });
-          }
-
-          function appendIP() {
-            const ip = document.getElementById('ipInput').value;
-            if (ip) {
-              $.post("/server/append", { ip: ip }, function(data) {
-                alert(`IP ${ip} ajoutée à la liste blanche`);
-              }).fail(function() {
-                alert("Erreur lors de l'ajout de l'IP à la liste blanche.");
-              });
-            } else {
-              alert('Veuillez entrer une IP');
-            }
-          }
-
+          
           document.addEventListener('DOMContentLoaded', function() {
             const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
             const mobileSidebar = document.getElementById('mobile-sidebar');

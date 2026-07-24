@@ -14,4 +14,4 @@ def test_directory_traversal(url):
     print("Test completed, no vulnerability found.")
 
 # Remplacez 'http://yourserver.com' par l'URL de votre serveur
-test_directory_traversal('http://127.0.0.1:3000')
+test_directory_traversal('http://127.0.0.1:8080')

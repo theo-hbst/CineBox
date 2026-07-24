@@ -10,4 +10,4 @@ def test_server(url):
         print(f"An error occurred: {e}")
 
 # Remplacez 'http://yourserver.com' par l'URL de votre serveur
-test_server('http://127.0.0.1:3000/pages/content/home.html')
+test_server('http://127.0.0.1:8080/pages/content/home.html')

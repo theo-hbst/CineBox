@@ -41,20 +41,12 @@ const argv = yargs(hideBin(process.argv))
   .option('localhost', {
     alias: 'l',
     type: 'boolean',
-    description: 'Run server on localhost only',
+    description: 'Run server on localhost\'s ip only',
   })
   .option('noid', {
     type: 'boolean',
     default: false,
-    description: 'Bypass authentication (connection), IP redirect/rejection and logout',
-  })
-  .option('debug-append', {
-    type: 'boolean',
-    description: 'Do not append server IPs to allowlist',
-  })
-  .option('persist-append', {
-    type: 'boolean',
-    description: 'Persist appended server IPs to allowlist file',
+    description: 'Bypass authentication, IP redirect/rejection and logout',
   })
   .version(version)
   .alias('version', 'v')
@@ -620,7 +612,6 @@ app.post('/server/append', (req, res) => {
   }
 });
 
-
 app.post('/scraper', (req, res) => {
   const pythonExecutable = process.env.PYTHON_EXECUTABLE || process.env.PYTHON || 'python';
   const pythonProcessScraper = spawn(pythonExecutable, ['public/python/scraper.py']);
@@ -995,16 +986,9 @@ server.listen(port, () => {
         // Skip over non-IPv4 addresses
         if (net.family === "IPv4") {
           console.log(colors.green(`http://${net.address}:${port}`));
-          if (!argv['debug-append'] && !allowlist.includes(net.address)) {
-            allowlist.push(net.address);
-          }
         }
       }
     }
-  }
-
-  if (!argv['debug-append'] && argv['persist-append']) {
-    fs.writeFileSync('public/json/allowlist.json', JSON.stringify({ allowedIPs: allowlist }, null, 2));
   }
   rl.prompt();
 });
