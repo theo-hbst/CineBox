@@ -1,4 +1,29 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const configResponse = await fetch('/api/config');
+        const config = await configResponse.json();
+
+        if (config.noid) {
+            const authResponse = await fetch('/auth', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({}),
+            });
+            const payload = await authResponse.json();
+
+            localStorage.setItem('username', payload.username);
+            if (payload.avatarUrl) {
+                localStorage.setItem('avatarUrl', payload.avatarUrl);
+            } else {
+                localStorage.removeItem('avatarUrl');
+            }
+            window.location.href = '/public/pages/content/home.html';
+            return;
+        }
+    } catch (error) {
+        console.error(error);
+    }
+
     const form = document.querySelector('form');
     const usernameField = document.querySelector('input[name="login_field"]');
     const passwordField = document.querySelector('input[name="password_field"]');

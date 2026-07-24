@@ -14,15 +14,30 @@
 
   <body>
     <script>
-      localStorage.removeItem('username');
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 5000);
+      fetch('/api/config')
+        .then((res) => res.json())
+        .then((config) => {
+          if (config.noid) {
+            window.location.href = '/public/pages/content/home.html';
+            return;
+          }
+
+          localStorage.removeItem('username');
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 5000);
+        })
+        .catch(() => {
+          localStorage.removeItem('username');
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 5000);
+        });
     </script>
 
     <h1>Déconnecté</h1>
     <p>Vous avez été déconnecté de ce service avec succès!</p>
     <p class="redirect-message">Vous serez redirigé vers la page d'accueil dans quelques secondes...</p>
-    <p class="footer">Secure Form - V1.4</p>
+    <p class="footer">V1.5</p>
   </body>
 </html>

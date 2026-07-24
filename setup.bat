@@ -88,8 +88,3 @@ if exist "package.json" (
     echo -^> Aucun fichier 'package.json' trouvé. Étape ignorée.
 )
 echo.
-
-echo ===================================================
-echo           OPERATIONS TERMINEES !
-echo ===================================================
-pause

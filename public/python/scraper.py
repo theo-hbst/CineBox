@@ -1,9 +1,6 @@
 """
 public/python/scraper.py
-
-Fetches the IMDb "most popular movies" chart and writes the results to
-public/json/scrapedMoviesTemp.json. Prints SCRAPING_COMPLETE at the end so
-server.js knows to swap the temp file into place.
+Fetch les 24 films les plus populaires du moment sur IMDB et les écrit dans un fichier public/json/scrapedMoviesTemp.json.
 """
 
 import json
@@ -12,13 +9,10 @@ from pathlib import Path
 
 import requests
 
-# --- paths -------------------------------------------------------------
-# This file lives at public/python/scraper.py, so we go up two levels to
-# reach the project root, then down into public/json/.
 ROOT = Path(__file__).resolve().parent.parent.parent
 OUTPUT_FILE = ROOT / "public" / "json" / "scrapedMoviesTemp.json"
 
-LIMIT = 24  # matches the "#24 Top Films" heading in home.html
+LIMIT = 24  # 24 premiers films (ajustable)
 
 
 def fetch_moviemeter_movies(limit: int = LIMIT) -> dict:
@@ -91,7 +85,7 @@ def fetch_moviemeter_movies(limit: int = LIMIT) -> dict:
 def main() -> int:
     try:
         movies = fetch_moviemeter_movies(LIMIT)
-    except Exception as exc:  # network errors, IMDb schema changes, etc.
+    except Exception as exc:  # Afficher les erreurs éventuelles
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1
 

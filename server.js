@@ -43,9 +43,10 @@ const argv = yargs(hideBin(process.argv))
     type: 'boolean',
     description: 'Run server on localhost only',
   })
-  .option('no-id', {
+  .option('noid', {
     type: 'boolean',
-    description: 'Run server without the need to authenticate',
+    default: false,
+    description: 'Bypass authentication (connection), IP redirect/rejection and logout',
   })
   .option('debug-append', {
     type: 'boolean',
@@ -406,6 +407,15 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.post('/auth', bruteforce.prevent, (req, res) => {
+  if (argv.noid) {
+    const usersData = readUsersData();
+    const fallbackUser = Array.isArray(usersData.users) ? usersData.users[0] : null;
+    const username = (req.body && req.body.username) || (fallbackUser && fallbackUser.username) || 'guest';
+    const avatarUrl = fallbackUser ? getAvatarUrl(fallbackUser.avatarUrl) : null;
+
+    return res.json({ username, avatarUrl, noid: true });
+  }
+
   const schema = Joi.object({
     username: Joi.string().min(1).max(30).required(),
     password: Joi.string().min(1).max(100).required(),
@@ -434,6 +444,21 @@ app.post('/auth', bruteforce.prevent, (req, res) => {
     console.error(colors.red(`Auth error: ${error.message}`));
     return res.status(500).json({ error: 'Unable to validate credentials.' });
   }
+});
+
+app.get('/api/config', (req, res) => {
+  return res.json({ noid: !!argv.noid });
+});
+
+app.post('/logout', (req, res) => {
+  if (argv.noid) {
+    // En mode --noid, il n'y a pas de session à invalider : on répond simplement OK
+    // pour que le frontend puisse gérer ce cas sans forcer de déconnexion réelle.
+    return res.json({ noid: true, loggedOut: false });
+  }
+
+  res.clearCookie('session');
+  return res.json({ loggedOut: true });
 });
 
 app.get('/api/users/:username', (req, res) => {
@@ -656,6 +681,10 @@ app.get('/scraper/status', (req, res) => {
 });
 
 app.use((req, res, next) => {
+  if (argv.noid) {
+    return next();
+  }
+
   const clientIp = req.socket && req.socket.remoteAddress ? req.socket.remoteAddress.replace(/^::ffff:/, "") : null;
 
   if (argv.localhost) {
@@ -948,6 +977,10 @@ app.use((req, res) => {
 
 const port = argv.port; // Change this to your preferred port
 server.listen(port, () => {
+  if (argv.noid) {
+    console.log(colors.magenta('--noid activé: bypass de l\'authentification, redirection IP/ et déconnection.'));
+  }
+
   console.log(colors.yellow(`Server is running on the following addresses:`));
 
   if (argv.localhost) {
