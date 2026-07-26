@@ -1,9 +1,11 @@
 {
   "users": [
     {
-      "username": "default",
-      "password": "default",
-      "avatarUrl": null
+      "username": "admin",
+      "admin": true,
+      "avatarUrl": null,
+      "passwordSalt": "c3ef12750b1a914da927079004342741",
+      "passwordHash": "9ea3395bfaa20e0bbec8c300db96262749614bedffa4283ab50bf9478a4dee16d4a3bc3c9e78cb2626a5ee5e004f51f2ddb0d9f6a47b7eca4970ce6e0c02b8d8"
     }
   ]
 }

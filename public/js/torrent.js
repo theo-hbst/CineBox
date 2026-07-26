@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setProgress(progress, active);
 
     if (job.status === 'completed') {
-      setMessage('Téléchargement terminé.');
+      setMessage('Download complete.');
       sessionStorage.removeItem(stateKey);
       activeJobId = '';
       activeJobStatus = 'completed';
@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (job.status === 'cancelled') {
-      setMessage('Téléchargement annulé et nettoyé.');
+      setMessage('Download cancelled and cleaned up.');
       sessionStorage.removeItem(stateKey);
       activeJobId = '';
       activeJobStatus = 'cancelled';
@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (job.status === 'error') {
-      setMessage(job.message || 'Le téléchargement a échoué.');
+      setMessage(job.message || 'The download failed.');
       sessionStorage.removeItem(stateKey);
       activeJobId = '';
       activeJobStatus = 'error';
@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
       statusBits.push(`ETA ${job.eta}`);
     }
     setMessage(statusBits.join(' • '));
-    progressLabel.textContent = job.status === 'cancelling' ? 'Annulation en cours' : 'Téléchargement en cours';
+    progressLabel.textContent = job.status === 'cancelling' ? 'Cancelling' : 'Downloading';
   }
 
   function updateFormDisplay() {
@@ -119,14 +119,29 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    fileInfo.innerHTML = `<p><strong>Fichier sélectionné:</strong> ${file.name}</p><p><strong>Taille:</strong> ${(file.size / 1024 / 1024).toFixed(2)} MB</p>`;
+    fileInfo.innerHTML = '';
+
+    const nameParagraph = document.createElement('p');
+    const nameLabel = document.createElement('strong');
+    nameLabel.textContent = 'Selected file: ';
+    nameParagraph.appendChild(nameLabel);
+    nameParagraph.appendChild(document.createTextNode(file.name));
+
+    const sizeParagraph = document.createElement('p');
+    const sizeLabel = document.createElement('strong');
+    sizeLabel.textContent = 'Size: ';
+    sizeParagraph.appendChild(sizeLabel);
+    sizeParagraph.appendChild(document.createTextNode(`${(file.size / 1024 / 1024).toFixed(2)} MB`));
+
+    fileInfo.appendChild(nameParagraph);
+    fileInfo.appendChild(sizeParagraph);
     fileInfo.style.display = 'block';
   }
 
   async function loadCurrentJob() {
     if (!activeJobId) {
       setProgress(0, false);
-      progressLabel.textContent = 'En attente d’un lancement';
+      progressLabel.textContent = 'Waiting to start';
       setMessage('');
       return;
     }
@@ -135,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const response = await fetch(`/api/torrent/status/${encodeURIComponent(activeJobId)}`);
       if (!response.ok) {
         setActiveJob(null);
-        progressLabel.textContent = 'En attente d’un lancement';
+        progressLabel.textContent = 'Waiting to start';
         setMessage('');
         return;
       }
@@ -154,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (fileInput.files.length === 0) {
-      setMessage('Veuillez sélectionner un fichier torrent.');
+      setMessage('Please select a torrent file.');
       return;
     }
 
@@ -162,16 +177,16 @@ document.addEventListener('DOMContentLoaded', () => {
     formData.append('file_upload', fileInput.files[0]);
 
     startBtn.disabled = true;
-    setMessage('Préparation du torrent...');
+    setMessage('Preparing the torrent...');
 
-    const response = await fetch('/api/torrent/upload', {
+    const response = await csrfFetch('/api/torrent/upload', {
       method: 'POST',
       body: formData,
     });
 
     const payload = await response.json();
     if (!response.ok) {
-      setMessage(payload.error || 'Impossible de lancer le torrent.');
+      setMessage(payload.error || 'Unable to start the torrent.');
       updateSubmitState();
       return;
     }
@@ -185,22 +200,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     cancelBtn.disabled = true;
-    setMessage('Annulation en cours...');
+    setMessage('Cancelling...');
 
     try {
-      const response = await fetch(`/api/torrent/cancel/${encodeURIComponent(activeJobId)}`, {
+      const response = await csrfFetch(`/api/torrent/cancel/${encodeURIComponent(activeJobId)}`, {
         method: 'POST',
       });
 
       const payload = await response.json();
       if (!response.ok) {
-        setMessage(payload.error || 'Impossible d’annuler le téléchargement.');
+        setMessage(payload.error || 'Unable to cancel the download.');
         cancelBtn.disabled = false;
         return;
       }
 
       setActiveJob(payload.job);
-      setMessage('Annulation demandée.');
+      setMessage('Cancellation requested.');
     } catch (error) {
       setMessage(error.message);
       cancelBtn.disabled = false;
@@ -217,7 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       await startTorrentJob();
     } catch (error) {
-      setMessage(error.message || 'Une erreur est survenue.');
+      setMessage(error.message || 'An error occurred.');
       updateSubmitState();
     }
   });
@@ -256,7 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       setActiveJob(job);
-      progressLabel.textContent = job.status === 'cancelling' ? 'Annulation en cours' : 'Téléchargement en cours';
+      progressLabel.textContent = job.status === 'cancelling' ? 'Cancelling' : 'Downloading';
     });
   }
 

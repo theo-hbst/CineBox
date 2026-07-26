@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const payload = await authResponse.json();
 
             localStorage.setItem('username', payload.username);
+            localStorage.setItem('admin', payload.admin ? '1' : '0');
             if (payload.avatarUrl) {
                 localStorage.setItem('avatarUrl', payload.avatarUrl);
             } else {
@@ -48,11 +49,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!response.ok) {
                 passwordField.classList.add('error');
                 setTimeout(() => passwordField.classList.remove('error'), 500);
-                alert(payload.error || "Nom d'utilisateur ou mot de passe incorrect.");
+                alert(payload.error || "Incorrect username or password.");
                 return;
             }
 
             localStorage.setItem('username', payload.username);
+            localStorage.setItem('admin', payload.admin ? '1' : '0');
             if (payload.avatarUrl) {
                 localStorage.setItem('avatarUrl', payload.avatarUrl);
             } else {
@@ -61,7 +63,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             window.location.href = '/public/pages/content/home.html';
         } catch (error) {
             console.error(error);
-            alert('Erreur de connexion. Veuillez réessayer.');
+            alert('Connection error. Please try again.');
         }
     });
 });

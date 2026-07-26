@@ -5,11 +5,11 @@ const os = require('os');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const Joi = require('joi');
-const ExpressBrute = require('express-brute');
+const Tokens = require('csrf');
 const cookieParser = require('cookie-parser');
 const http = require('http');
 const socketIo = require('socket.io');
-const { randomUUID } = require('crypto');
+const { randomUUID, randomBytes, scryptSync, timingSafeEqual } = require('crypto');
 const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
 const colors = require('colors');
@@ -41,12 +41,12 @@ const argv = yargs(hideBin(process.argv))
   .option('localhost', {
     alias: 'l',
     type: 'boolean',
-    description: 'Run server on localhost\'s ip only',
+    description: 'Run server on localhost only',
   })
   .option('noid', {
     type: 'boolean',
     default: false,
-    description: 'Bypass authentication, IP redirect/rejection and logout',
+    description: 'Bypass authentication (connection), IP redirect/rejection and logout',
   })
   .version(version)
   .alias('version', 'v')
@@ -60,11 +60,21 @@ const BASE_DIR = __dirname + '/Media';
 const TORRENT_DOWNLOAD_DIR = path.join(BASE_DIR, 'downloads');
 const TORRENT_JOB_DIR = path.join(TORRENT_DOWNLOAD_DIR, 'torrentJobs');
 const TORRENT_INFO_DIR = path.join(TORRENT_DOWNLOAD_DIR, 'torrentInfo');
-const ARIA2C_LOCAL_EXE = path.join(__dirname, 'public', 'python', 'aria2c.exe');
 const USERS_FILE = path.join(__dirname, 'public', 'json', 'users.json');
 const PROFILE_PICTURE_DIR = path.join(__dirname, 'public', 'imgs', 'profile-pictures');
 
 const torrentJobs = new Map();
+
+// Resolves a client-supplied relative path inside BASE_DIR, and
+// returns null if the result escapes BASE_DIR (path traversal).
+const RESOLVED_BASE_DIR = path.resolve(BASE_DIR);
+function resolveSafePath(relativePath) {
+  const resolved = path.resolve(RESOLVED_BASE_DIR, relativePath || '');
+  if (resolved !== RESOLVED_BASE_DIR && !resolved.startsWith(RESOLVED_BASE_DIR + path.sep)) {
+    return null;
+  }
+  return resolved;
+}
 
 function ensureDirectory(dirPath) {
   if (!fs.existsSync(dirPath)) {
@@ -73,7 +83,7 @@ function ensureDirectory(dirPath) {
 }
 
 function getAria2Command() {
-  return fs.existsSync(ARIA2C_LOCAL_EXE) ? ARIA2C_LOCAL_EXE : 'aria2c';
+  return 'aria2c';
 }
 
 function createTorrentJob(type, sourceLabel) {
@@ -340,6 +350,65 @@ function writeUsersData(usersData) {
   fs.writeFileSync(USERS_FILE, JSON.stringify(usersData, null, 2));
 }
 
+// --- Password hashing (crypto.scrypt, native to Node) ---------------------
+// scrypt is a "memory-hard" KDF recommended by OWASP alongside
+// bcrypt/argon2. Used here instead of bcrypt/bcryptjs since neither is
+// installed and npm install isn't possible offline; scrypt is part of
+// Node's native crypto module, so zero extra dependency.
+const SCRYPT_KEYLEN = 64;
+
+function hashPassword(password) {
+  const salt = randomBytes(16).toString('hex');
+  const hash = scryptSync(password, salt, SCRYPT_KEYLEN).toString('hex');
+  return { salt, hash };
+}
+
+function verifyPassword(password, salt, hash) {
+  if (!password || !salt || !hash) {
+    return false;
+  }
+  try {
+    const hashBuffer = Buffer.from(hash, 'hex');
+    const candidateBuffer = scryptSync(password, salt, SCRYPT_KEYLEN);
+    if (candidateBuffer.length !== hashBuffer.length) {
+      return false;
+    }
+    return timingSafeEqual(candidateBuffer, hashBuffer);
+  } catch (error) {
+    return false;
+  }
+}
+
+// Automatic migration on startup: any account still stored with a
+// plaintext password (`password`) is hashed and the plaintext field is
+// removed. Idempotent: does not touch already-migrated accounts.
+function migratePlaintextPasswords() {
+  const usersData = readUsersData();
+  let migrated = false;
+
+  usersData.users.forEach((user) => {
+    if (user.password && !user.passwordHash) {
+      const { salt, hash } = hashPassword(user.password);
+      user.passwordSalt = salt;
+      user.passwordHash = hash;
+      delete user.password;
+      migrated = true;
+    }
+  });
+
+  if (migrated) {
+    writeUsersData(usersData);
+    console.log(colors.green(`Migrated ${usersData.users.length} user(s) from plaintext to scrypt password hashes.`));
+  }
+}
+// ---------------------------------------------------------------------------
+
+try {
+  migratePlaintextPasswords();
+} catch (error) {
+  console.error(colors.red(`Password migration skipped (users.json unreadable): ${error.message}`));
+}
+
 function getAvatarUrl(avatarPath) {
   return avatarPath && typeof avatarPath === 'string' ? avatarPath : null;
 }
@@ -374,11 +443,44 @@ if (argv.allowlist) {
   }
 }
 
+// Prevents the site from being embedded in a third-party iframe (clickjacking).
+// No dependency (helmet) installed and no network access to add one,
+// so the header is set by hand rather than a package for 3 lines.
+app.use((req, res, next) => {
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Content-Security-Policy', "frame-ancestors 'none'");
+  next();
+});
+
 app.use(cors());
-app.use(express.static(path.join(__dirname, 'public')));
 app.use(cookieParser());
 app.use((req, res, next) => {
   res.cookie('session', '1', {httpOnly: true });
+  next();
+});
+
+// IMPORTANT: this check must stay at the very top, before ANY route
+// AND before express.static, otherwise statically served pages/files
+// (including server.html) remain accessible without IP restriction no
+// matter --localhost/--allowlist.
+app.use((req, res, next) => {
+  if (argv.noid) {
+    return next();
+  }
+
+  const clientIp = req.socket && req.socket.remoteAddress ? req.socket.remoteAddress.replace(/^::ffff:/, "") : null;
+
+  if (argv.localhost) {
+    if (clientIp !== '127.0.0.1') {
+      console.log(colors.red(`Rejected IP: ${clientIp}`)); // Log the blocked IP
+      res.sendFile(path.join(__dirname, "public/pages/errors/403.html"));
+      return;
+    }
+  } else if (argv.allowlist && clientIp && !allowlist.includes(clientIp)) {
+    console.log(colors.red(`Rejected IP: ${clientIp}`)); // Log the blocked IP
+    res.sendFile(path.join(__dirname, "public/pages/errors/403.html"));
+    return;
+  }
   next();
 });
 
@@ -392,20 +494,104 @@ let limiter = rateLimit({
 });
 app.use(limiter);
 
-const store = new ExpressBrute.MemoryStore(); // stores state locally, don't use this in production
-const bruteforce = new ExpressBrute(store);
+// Anti brute-force on /auth (replaces express-brute, unmaintained since 2019).
+// express-rate-limit is already a dependency of the project and actively maintained.
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // 10 tentatives de connexion par IP toutes les 15 minutes
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: function (req, res) {
+    console.log(colors.red(`Blocked IP due to too many login attempts: ${req.ip}`));
+    res.status(429).json({ error: 'Too many login attempts. Please try again later.' });
+  }
+});
+
+// --- CSRF protection -------------------------------------------------------
+// csurf (the previously installed package) has been deprecated since 2022.
+// We directly reuse `csrf`, the low-level library csurf used internally,
+// to implement a homemade "double submit cookie" pattern:
+// - a CSRF secret is stored in a server-side httpOnly cookie
+// - the frontend fetches a token derived from that secret via /api/csrf-token
+// - that token must be sent back in the X-CSRF-Token header on every request
+//   that changes state (POST/PUT/PATCH/DELETE), except /auth (pre-session)
+const csrfTokens = new Tokens();
+
+app.use((req, res, next) => {
+  if (!req.cookies || !req.cookies.csrfSecret) {
+    const secret = csrfTokens.secretSync();
+    res.cookie('csrfSecret', secret, { httpOnly: true, sameSite: 'strict' });
+    req.csrfSecret = secret;
+  } else {
+    req.csrfSecret = req.cookies.csrfSecret;
+  }
+  next();
+});
+
+app.get('/api/csrf-token', (req, res) => {
+  res.json({ csrfToken: csrfTokens.create(req.csrfSecret) });
+});
+
+function verifyCsrf(req, res, next) {
+  const token = req.get('X-CSRF-Token') || (req.body && req.body._csrf);
+  if (!req.csrfSecret || !token || !csrfTokens.verify(req.csrfSecret, token)) {
+    console.log(colors.red(`Rejected request with invalid/missing CSRF token: ${req.method} ${req.originalUrl}`));
+    return res.status(403).json({ error: 'Invalid or missing CSRF token' });
+  }
+  next();
+}
+// ---------------------------------------------------------------------------
+
+// --- Server sessions + admin role ------------------------------------------
+// Until now "authentication" only existed client-side (localStorage), so
+// anyone could call the routes directly (curl, etc.) without ever having
+// logged in. We add a real server session, created at login, to be able
+// to check the admin role on sensitive routes.
+const sessions = new Map(); // sessionId -> { username, admin }
+
+function createSession(user) {
+  const sessionId = randomUUID();
+  sessions.set(sessionId, { username: user.username, admin: !!user.admin });
+  return sessionId;
+}
+
+app.use((req, res, next) => {
+  const sid = req.cookies && req.cookies.sid;
+  req.session = sid ? sessions.get(sid) || null : null;
+  next();
+});
+
+function requireAdmin(req, res, next) {
+  if (argv.noid) {
+    return next();
+  }
+  if (req.session && req.session.admin) {
+    return next();
+  }
+  return res.status(403).json({ error: 'Access restricted to administrators.' });
+}
+// ---------------------------------------------------------------------------
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.post('/auth', bruteforce.prevent, (req, res) => {
+// Must be declared BEFORE express.static: otherwise express.static would
+// serve server.html directly, never going through requireAdmin.
+app.get('/public/pages/content/server.html', requireAdmin, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/pages/content/server.html'));
+});
+
+app.use(express.static(path.join(__dirname, 'public')));
+
+app.post('/auth', authLimiter, (req, res) => {
   if (argv.noid) {
     const usersData = readUsersData();
     const fallbackUser = Array.isArray(usersData.users) ? usersData.users[0] : null;
     const username = (req.body && req.body.username) || (fallbackUser && fallbackUser.username) || 'guest';
     const avatarUrl = fallbackUser ? getAvatarUrl(fallbackUser.avatarUrl) : null;
+    const admin = fallbackUser ? !!fallbackUser.admin : false;
 
-    return res.json({ username, avatarUrl, noid: true });
+    return res.json({ username, avatarUrl, admin, noid: true });
   }
 
   const schema = Joi.object({
@@ -421,16 +607,20 @@ app.post('/auth', bruteforce.prevent, (req, res) => {
   try {
     const usersData = readUsersData();
     const userFound = Array.isArray(usersData.users)
-      ? usersData.users.find((user) => user.username === req.body.username && user.password === req.body.password)
+      ? usersData.users.find((user) => user.username === req.body.username)
       : null;
 
-    if (!userFound) {
-      return res.status(401).json({ error: 'Nom d\'utilisateur ou mot de passe incorrect.' });
+    if (!userFound || !verifyPassword(req.body.password, userFound.passwordSalt, userFound.passwordHash)) {
+      return res.status(401).json({ error: 'Incorrect username or password.' });
     }
+
+    const sessionId = createSession(userFound);
+    res.cookie('sid', sessionId, { httpOnly: true, sameSite: 'strict' });
 
     return res.json({
       username: userFound.username,
       avatarUrl: getAvatarUrl(userFound.avatarUrl),
+      admin: !!userFound.admin,
     });
   } catch (error) {
     console.error(colors.red(`Auth error: ${error.message}`));
@@ -442,24 +632,42 @@ app.get('/api/config', (req, res) => {
   return res.json({ noid: !!argv.noid });
 });
 
-app.post('/logout', (req, res) => {
+app.post('/logout', verifyCsrf, (req, res) => {
   if (argv.noid) {
-    // En mode --noid, il n'y a pas de session à invalider : on répond simplement OK
-    // pour que le frontend puisse gérer ce cas sans forcer de déconnexion réelle.
+    // In --noid mode there is no session to invalidate: just respond OK
+    // so the frontend can handle this case without forcing a real logout.
     return res.json({ noid: true, loggedOut: false });
   }
 
+  if (req.cookies && req.cookies.sid) {
+    sessions.delete(req.cookies.sid);
+  }
+  res.clearCookie('sid');
   res.clearCookie('session');
   return res.json({ loggedOut: true });
 });
 
 app.get('/api/users/:username', (req, res) => {
+  // This route is only ever called by the frontend (profile.js) for the
+  // currently logged-in user's own profile. So we block: (1) any request
+  // without a valid session, (2) any attempt to look up ANOTHER user's
+  // profile (unless admin) - this closes the account enumeration found
+  // by the idor.py script.
+  if (!argv.noid) {
+    if (!req.session) {
+      return res.status(401).json({ error: 'Authentication required.' });
+    }
+    if (req.session.username !== req.params.username && !req.session.admin) {
+      return res.status(403).json({ error: 'Access restricted to the profile owner.' });
+    }
+  }
+
   try {
     const usersData = readUsersData();
     const user = usersData.users.find((entry) => entry.username === req.params.username);
 
     if (!user) {
-      return res.status(404).json({ error: 'Utilisateur introuvable.' });
+      return res.status(404).json({ error: 'User not found.' });
     }
 
     return res.json({
@@ -472,7 +680,7 @@ app.get('/api/users/:username', (req, res) => {
   }
 });
 
-app.post('/api/users/avatar', handleProfilePictureUpload, (req, res) => {
+app.post('/api/users/avatar', verifyCsrf, handleProfilePictureUpload, (req, res) => {
   const username = typeof req.body.username === 'string' ? req.body.username.trim() : '';
 
   if (!username) {
@@ -493,7 +701,7 @@ app.post('/api/users/avatar', handleProfilePictureUpload, (req, res) => {
 
     if (userIndex === -1) {
       removeFileIfExists(req.file.path);
-      return res.status(404).json({ error: 'Utilisateur introuvable.' });
+      return res.status(404).json({ error: 'User not found.' });
     }
 
     const previousAvatarUrl = getAvatarUrl(usersData.users[userIndex].avatarUrl);
@@ -519,7 +727,7 @@ app.post('/api/users/avatar', handleProfilePictureUpload, (req, res) => {
   }
 });
 
-app.post('/api/users/username', (req, res) => {
+app.post('/api/users/username', verifyCsrf, (req, res) => {
   const schema = Joi.object({
     currentUsername: Joi.string().min(1).max(30).required(),
     newUsername: Joi.string().min(1).max(30).required(),
@@ -553,12 +761,12 @@ app.post('/api/users/username', (req, res) => {
     const currentUserIndex = usersData.users.findIndex((entry) => entry.username === currentUsername);
 
     if (currentUserIndex === -1) {
-      return res.status(404).json({ error: 'Utilisateur introuvable.' });
+      return res.status(404).json({ error: 'User not found.' });
     }
 
     const usernameAlreadyExists = usersData.users.some((entry) => entry.username === newUsername);
     if (usernameAlreadyExists) {
-      return res.status(409).json({ error: 'Ce nom d\'utilisateur est déjà utilisé.' });
+      return res.status(409).json({ error: 'This username is already taken.' });
     }
 
     usersData.users[currentUserIndex].username = newUsername;
@@ -574,14 +782,181 @@ app.post('/api/users/username', (req, res) => {
   }
 });
 
-app.post('/server/stop', (req, res) => {
+// --- User management (admin only) ------------------------------------------
+// Note: we use /api/admin/users (not /api/users/:username) to never
+// conflict with the /api/users/username route above, which is a literal
+// path that would also match a :username parameter.
+
+function sanitizeUserForResponse(user) {
+  return {
+    username: user.username,
+    admin: !!user.admin,
+    avatarUrl: getAvatarUrl(user.avatarUrl),
+  };
+}
+
+app.get('/api/admin/users', requireAdmin, (req, res) => {
+  try {
+    const usersData = readUsersData();
+    return res.json({ users: usersData.users.map(sanitizeUserForResponse) });
+  } catch (error) {
+    console.error(colors.red(`List users error: ${error.message}`));
+    return res.status(500).json({ error: 'Unable to load users.' });
+  }
+});
+
+app.post('/api/admin/users', requireAdmin, verifyCsrf, (req, res) => {
+  const schema = Joi.object({
+    username: Joi.string().min(1).max(30).required(),
+    password: Joi.string().min(1).max(100).required(),
+    admin: Joi.boolean().default(false),
+  });
+
+  const { error, value } = schema.validate(req.body);
+  if (error) {
+    return res.status(400).json({ error: error.details[0].message });
+  }
+
+  try {
+    const usersData = readUsersData();
+    const username = value.username.trim();
+
+    if (usersData.users.some((entry) => entry.username === username)) {
+      return res.status(409).json({ error: 'This username is already taken.' });
+    }
+
+    const { salt, hash } = hashPassword(value.password);
+    const newUser = {
+      username,
+      admin: !!value.admin,
+      avatarUrl: null,
+      passwordSalt: salt,
+      passwordHash: hash,
+    };
+    usersData.users.push(newUser);
+    writeUsersData(usersData);
+
+    console.log(colors.green(`Admin ${req.session && req.session.username} created user ${username} (admin: ${!!value.admin})`));
+    return res.status(201).json({ user: sanitizeUserForResponse(newUser) });
+  } catch (error) {
+    console.error(colors.red(`Create user error: ${error.message}`));
+    return res.status(500).json({ error: 'Unable to create user.' });
+  }
+});
+
+app.put('/api/admin/users/:username', requireAdmin, verifyCsrf, (req, res) => {
+  const schema = Joi.object({
+    newUsername: Joi.string().min(1).max(30),
+    password: Joi.string().min(1).max(100).allow(''),
+    admin: Joi.boolean(),
+  });
+
+  const { error, value } = schema.validate(req.body);
+  if (error) {
+    return res.status(400).json({ error: error.details[0].message });
+  }
+
+  try {
+    const usersData = readUsersData();
+    const targetUsername = req.params.username;
+    const userIndex = usersData.users.findIndex((entry) => entry.username === targetUsername);
+
+    if (userIndex === -1) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    const isLastAdmin = usersData.users.filter((entry) => entry.admin).length === 1
+      && usersData.users[userIndex].admin;
+
+    if (isLastAdmin && value.admin === false) {
+      return res.status(400).json({ error: 'Cannot remove admin rights from the last administrator.' });
+    }
+
+    if (value.newUsername && value.newUsername.trim() !== targetUsername) {
+      const newUsername = value.newUsername.trim();
+      const usernameTaken = usersData.users.some((entry) => entry.username === newUsername);
+      if (usernameTaken) {
+        return res.status(409).json({ error: 'This username is already taken.' });
+      }
+      usersData.users[userIndex].username = newUsername;
+
+      // Invalidate this user's active sessions to stay consistent with
+      // their new name (avoids a "ghost" session under the old name).
+      for (const [sid, session] of sessions.entries()) {
+        if (session.username === targetUsername) {
+          sessions.delete(sid);
+        }
+      }
+    }
+
+    if (typeof value.admin === 'boolean') {
+      usersData.users[userIndex].admin = value.admin;
+    }
+
+    if (value.password) {
+      const { salt, hash } = hashPassword(value.password);
+      usersData.users[userIndex].passwordSalt = salt;
+      usersData.users[userIndex].passwordHash = hash;
+
+      // A password change also invalidates active sessions.
+      for (const [sid, session] of sessions.entries()) {
+        if (session.username === usersData.users[userIndex].username) {
+          sessions.delete(sid);
+        }
+      }
+    }
+
+    writeUsersData(usersData);
+    return res.json({ user: sanitizeUserForResponse(usersData.users[userIndex]) });
+  } catch (error) {
+    console.error(colors.red(`Update user error: ${error.message}`));
+    return res.status(500).json({ error: 'Unable to update user.' });
+  }
+});
+
+app.delete('/api/admin/users/:username', requireAdmin, verifyCsrf, (req, res) => {
+  try {
+    const usersData = readUsersData();
+    const targetUsername = req.params.username;
+    const userIndex = usersData.users.findIndex((entry) => entry.username === targetUsername);
+
+    if (userIndex === -1) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    const isLastAdmin = usersData.users.filter((entry) => entry.admin).length === 1
+      && usersData.users[userIndex].admin;
+
+    if (isLastAdmin) {
+      return res.status(400).json({ error: 'Cannot delete the last administrator.' });
+    }
+
+    usersData.users.splice(userIndex, 1);
+    writeUsersData(usersData);
+
+    for (const [sid, session] of sessions.entries()) {
+      if (session.username === targetUsername) {
+        sessions.delete(sid);
+      }
+    }
+
+    console.log(colors.yellow(`Admin ${req.session && req.session.username} deleted user ${targetUsername}`));
+    return res.sendStatus(204);
+  } catch (error) {
+    console.error(colors.red(`Delete user error: ${error.message}`));
+    return res.status(500).json({ error: 'Unable to delete user.' });
+  }
+});
+// ---------------------------------------------------------------------------
+
+app.post('/server/stop', requireAdmin, verifyCsrf, (req, res) => {
   console.log(colors.red('Stopping server...'));
   server.close(() => {
     process.exit(0);
   });
 });
 
-app.post('/server/restart', (req, res) => {
+app.post('/server/restart', requireAdmin, verifyCsrf, (req, res) => {
   console.log(colors.yellow('Restarting server...'));
   server.close(() => {
     const nodeProcess = spawn('node', [process.argv[1], ...process.argv.slice(2)], {
@@ -595,7 +970,7 @@ app.post('/server/restart', (req, res) => {
   res.send('Server restarting');
 });
 
-app.post('/server/append', (req, res) => {
+app.post('/server/append', requireAdmin, verifyCsrf, (req, res) => {
   const ip = req.body.ip;
   if (ip) {
     if (!allowlist.includes(ip)) {
@@ -612,7 +987,11 @@ app.post('/server/append', (req, res) => {
   }
 });
 
-app.post('/scraper', (req, res) => {
+
+// Runs the Python scraper and swaps in the temp file once complete.
+// Reused both by POST /scraper (user-triggered) and on server startup
+// (so there's no need to click "Refresh" every time it launches).
+function runScraper(onComplete) {
   const pythonExecutable = process.env.PYTHON_EXECUTABLE || process.env.PYTHON || 'python';
   const pythonProcessScraper = spawn(pythonExecutable, ['public/python/scraper.py']);
 
@@ -622,9 +1001,9 @@ app.post('/scraper', (req, res) => {
     const output = data.toString();
     console.log(colors.yellow(`stdout: ${output}`));
 
-    // Vérifier si le scraping est terminé
+    // Check whether scraping is complete
     if (output.includes('SCRAPING_COMPLETE')) {
-      // Échanger les fichiers
+      // Swap the files
       const oldFile = 'public/json/scrapedMovies.json';
       const tempFile = 'public/json/scrapedMoviesTemp.json';
 
@@ -652,11 +1031,19 @@ app.post('/scraper', (req, res) => {
 
   pythonProcessScraper.on('close', (code) => {
     console.log(colors.yellow(`child process exited with code ${code}`));
+    if (onComplete) {
+      onComplete(code);
+    }
+  });
+}
+
+app.post('/scraper', verifyCsrf, (req, res) => {
+  runScraper(() => {
     res.send('Scraper process completed');
   });
 });
 
-// Nouvel endpoint pour vérifier si le scraping est terminé
+// New endpoint to check whether scraping is complete
 app.get('/scraper/status', (req, res) => {
   const oldFile = 'public/json/scrapedMovies.json';
   const tempFile = 'public/json/scrapedMoviesTemp.json';
@@ -671,97 +1058,107 @@ app.get('/scraper/status', (req, res) => {
   });
 });
 
-app.use((req, res, next) => {
-  if (argv.noid) {
-    return next();
-  }
-
-  const clientIp = req.socket && req.socket.remoteAddress ? req.socket.remoteAddress.replace(/^::ffff:/, "") : null;
-
-  if (argv.localhost) {
-    if (clientIp !== '127.0.0.1') {
-      console.log(colors.red(`Rejected IP: ${clientIp}`)); // Log the blocked IP
-      res.sendFile(path.join(__dirname, "public/pages/errors/403.html"));
-      return;
-    }
-  } else if (argv.allowlist && clientIp && !allowlist.includes(clientIp)) {
-    console.log(colors.red(`Rejected IP: ${clientIp}`)); // Log the blocked IP 
-    res.sendFile(path.join(__dirname, "public/pages/errors/403.html"));
-    return;
-  }
-  next();
-});
-
 // Routes pour le gestionnaire de fichiers
 
 app.get('/files', (req, res) => {
   const filePath = req.query.path || '';
-  const fullPath = path.join(BASE_DIR, filePath);
+  const fullPath = resolveSafePath(filePath);
+  if (!fullPath) {
+    return res.status(403).json({ error: 'Invalid path' });
+  }
   fs.readdir(fullPath, (err, items) => {
     if (err) {
       return res.status(500).json({ error: 'Unable to scan directory' });
     }
-    const files = items.map(item => {
-      const itemPath = path.join(fullPath, item);
-      return {
-        name: item,
-        path: path.join(filePath, item),
-        isDirectory: fs.statSync(itemPath).isDirectory()
-      };
-    });
+    const files = items
+      .map(item => {
+        const itemPath = path.join(fullPath, item);
+        try {
+          return {
+            name: item,
+            path: path.join(filePath, item),
+            isDirectory: fs.statSync(itemPath).isDirectory()
+          };
+        } catch (statError) {
+          // A file may have disappeared/become unreadable between the readdir
+          // and the stat call: skip it instead of crashing the whole process.
+          console.error(colors.red(`Skipped unreadable entry ${itemPath}: ${statError.message}`));
+          return null;
+        }
+      })
+      .filter(Boolean);
     res.json(files);
   });
 });
 
-app.delete('/delete', (req, res) => {
+app.delete('/delete', verifyCsrf, (req, res) => {
   const filePath = req.query.path;
-  const fullPath = path.join(BASE_DIR, filePath);
-  if (fs.statSync(fullPath).isDirectory()) {
-    fs.rmSync(fullPath, { recursive: true, force: true });
-    console.log(colors.yellow(`Deleted directory: ${filePath}`));
-  } else {
-    fs.unlinkSync(fullPath);
-    console.log(colors.yellow(`Deleted file: ${filePath}`));
+  const fullPath = resolveSafePath(filePath);
+  if (!fullPath) {
+    return res.status(403).json({ error: 'Invalid path' });
   }
-  res.sendStatus(204);
+  try {
+    if (fs.statSync(fullPath).isDirectory()) {
+      fs.rmSync(fullPath, { recursive: true, force: true });
+      console.log(colors.yellow(`Deleted directory: ${filePath}`));
+    } else {
+      fs.unlinkSync(fullPath);
+      console.log(colors.yellow(`Deleted file: ${filePath}`));
+    }
+    res.sendStatus(204);
+  } catch (error) {
+    console.error(colors.red(`Delete error: ${error.message}`));
+    res.status(500).json({ error: 'Unable to delete path' });
+  }
 });
 
-app.post('/rename', (req, res) => {
+app.post('/rename', verifyCsrf, (req, res) => {
   const oldPath = req.query.oldPath;
   const newPath = req.query.newPath;
-  const fullOldPath = path.join(BASE_DIR, oldPath);
-  const fullNewPath = path.join(BASE_DIR, path.dirname(oldPath), newPath);
-  fs.renameSync(fullOldPath, fullNewPath);
-  console.log(colors.yellow(`Renamed: ${oldPath} to ${newPath}`));
-  res.sendStatus(204);
+  const fullOldPath = resolveSafePath(oldPath);
+  const fullNewPath = resolveSafePath(path.join(path.dirname(oldPath), newPath));
+  if (!fullOldPath || !fullNewPath) {
+    return res.status(403).json({ error: 'Invalid path' });
+  }
+  try {
+    fs.renameSync(fullOldPath, fullNewPath);
+    console.log(colors.yellow(`Renamed: ${oldPath} to ${newPath}`));
+    res.sendStatus(204);
+  } catch (error) {
+    console.error(colors.red(`Rename error: ${error.message}`));
+    res.status(500).json({ error: 'Unable to rename path' });
+  }
 });
 
-app.post('/move', (req, res) => {
+app.post('/move', verifyCsrf, (req, res) => {
   const sourcePath = req.body.sourcePath;
   const destinationPath = req.body.destinationPath;
   const fileName = path.basename(sourcePath);
-  
-  const fullSourcePath = path.join(BASE_DIR, sourcePath);
-  const fullDestinationPath = path.join(BASE_DIR, destinationPath, fileName);
-  
+
+  const fullSourcePath = resolveSafePath(sourcePath);
+  const destDir = resolveSafePath(destinationPath);
+  if (!fullSourcePath || !destDir) {
+    return res.status(403).json({ error: 'Invalid path' });
+  }
+  const fullDestinationPath = path.join(destDir, fileName);
+
   try {
-    // Vérifier que le dossier de destination existe
-    const destDir = path.join(BASE_DIR, destinationPath);
+    // Check that the destination folder exists
     if (!fs.existsSync(destDir)) {
       return res.status(400).json({ error: 'Destination directory does not exist' });
     }
     
-    // Vérifier que le fichier source existe
+    // Check that the source file exists
     if (!fs.existsSync(fullSourcePath)) {
       return res.status(400).json({ error: 'Source file does not exist' });
     }
     
-    // Vérifier qu'on ne déplace pas un dossier dans lui-même
+    // Check that we're not moving a folder into itself
     if (fs.statSync(fullSourcePath).isDirectory() && fullDestinationPath.startsWith(fullSourcePath)) {
       return res.status(400).json({ error: 'Cannot move directory into itself' });
     }
     
-    // Déplacer le fichier/dossier
+    // Move the file/folder
     fs.renameSync(fullSourcePath, fullDestinationPath);
     console.log(colors.yellow(`Moved: ${sourcePath} to ${destinationPath}/${fileName}`));
     res.json({ success: true, message: 'File moved successfully' });
@@ -773,7 +1170,10 @@ app.post('/move', (req, res) => {
 
 app.get('/download', (req, res) => {
   const filePath = req.query.path;
-  const fullPath = path.join(BASE_DIR, filePath);
+  const fullPath = resolveSafePath(filePath);
+  if (!fullPath) {
+    return res.status(403).json({ error: 'Invalid path' });
+  }
   console.log(colors.yellow(`Downloaded file: ${filePath}`));
   res.download(fullPath);
 });
@@ -889,9 +1289,9 @@ function handleTorrentUploadRequest(req, res) {
   });
 }
 
-app.post('/upload_file', upload.single('file_upload'), handleTorrentUploadRequest);
+app.post('/upload_file', verifyCsrf, upload.single('file_upload'), handleTorrentUploadRequest);
 
-app.post('/api/torrent/upload', upload.single('file_upload'), handleTorrentUploadRequest);
+app.post('/api/torrent/upload', verifyCsrf, upload.single('file_upload'), handleTorrentUploadRequest);
 
 app.get('/api/torrent/status/:jobId', (req, res) => {
   const job = torrentJobs.get(req.params.jobId);
@@ -905,7 +1305,7 @@ app.get('/api/torrent/status/:jobId', (req, res) => {
   });
 });
 
-app.post('/api/torrent/cancel/:jobId', (req, res) => {
+app.post('/api/torrent/cancel/:jobId', verifyCsrf, (req, res) => {
   const job = torrentJobs.get(req.params.jobId);
 
   if (!job) {
@@ -969,7 +1369,7 @@ app.use((req, res) => {
 const port = argv.port; // Change this to your preferred port
 server.listen(port, () => {
   if (argv.noid) {
-    console.log(colors.magenta('--noid activé: bypass de l\'authentification, redirection IP/ et déconnection.'));
+    console.log(colors.magenta('--noid enabled: bypassing authentication, IP redirect, and logout.'));
   }
 
   console.log(colors.yellow(`Server is running on the following addresses:`));
@@ -986,10 +1386,23 @@ server.listen(port, () => {
         // Skip over non-IPv4 addresses
         if (net.family === "IPv4") {
           console.log(colors.green(`http://${net.address}:${port}`));
+          if (!allowlist.includes(net.address)) {
+            allowlist.push(net.address);
+          }
         }
       }
     }
   }
+
+  console.log(colors.yellow('Starting automatic movie scraping...'));
+  runScraper((code) => {
+    if (code === 0) {
+      console.log(colors.green('Automatic scraping complete, movies are up to date.'));
+    } else {
+      console.log(colors.red(`Automatic scraping finished with code ${code} (the site will show previous data if available).`));
+    }
+  });
+
   rl.prompt();
 });
 
@@ -1026,9 +1439,7 @@ rl.on('line', (input) => {
       if (ip) {
         if (!allowlist.includes(ip)) {
           allowlist.push(ip);
-          if (argv['persist-append']) {
-            fs.writeFileSync('public/json/allowlist.json', JSON.stringify({ allowedIPs: allowlist }, null, 2));
-          }
+          fs.writeFileSync('public/json/allowlist.json', JSON.stringify({ allowedIPs: allowlist }, null, 2));
           console.log(colors.green(`Appended IP: ${ip}`));
           console.log(colors.cyan(`Current allowlist: ${JSON.stringify(allowlist, null, 2)}`));
         } else {

@@ -66,8 +66,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         usernameForm.classList.toggle('hidden', !isVisible);
         toggleUsernameFormButton.textContent = isVisible
-            ? 'Masquer le nom d\'utilisateur'
-            : 'Modifier le nom d\'utilisateur';
+            ? 'Hide username field'
+            : 'Change username';
 
         if (isVisible && usernameInput) {
             usernameInput.value = currentUsername === 'Guest' ? '' : currentUsername;
@@ -84,10 +84,10 @@ document.addEventListener('DOMContentLoaded', () => {
         formData.append('username', currentUsername);
         formData.append('avatar', file);
 
-        setProfileStatus('Téléversement en cours...');
+        setProfileStatus('Uploading...');
 
         try {
-            const response = await fetch('/api/users/avatar', {
+            const response = await csrfFetch('/api/users/avatar', {
                 method: 'POST',
                 body: formData,
             });
@@ -106,13 +106,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (changeAvatarButton) {
-                changeAvatarButton.textContent = 'Modifier la photo de profil';
+                changeAvatarButton.textContent = 'Change profile picture';
             }
 
-            setProfileStatus('Photo de profil mise à jour.');
+            setProfileStatus('Profile picture updated.');
         } catch (error) {
             console.error(error);
-            setProfileStatus(error.message || 'Erreur lors du téléversement.', true);
+            setProfileStatus(error.message || 'Error while uploading.', true);
         } finally {
             if (avatarInput) {
                 avatarInput.value = '';
@@ -129,9 +129,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            setProfileStatus('Mise à jour du nom d\'utilisateur...');
+            setProfileStatus('Updating username...');
 
-            const response = await fetch('/api/users/username', {
+            const response = await csrfFetch('/api/users/username', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -157,7 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (usernameElement) {
-                usernameElement.textContent = `Connecté en tant que : ${payload.username}`;
+                usernameElement.textContent = `Logged in as: ${payload.username}`;
             }
 
             if (usernameInput) {
@@ -165,24 +165,24 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             setUsernameFormVisible(false);
-            setProfileStatus('Nom d\'utilisateur mis à jour.');
+            setProfileStatus('Username updated.');
         } catch (error) {
             console.error(error);
-            setProfileStatus(error.message || 'Erreur lors du changement de nom.', true);
+            setProfileStatus(error.message || 'Error while changing username.', true);
         }
     }
 
     async function loadProfile() {
         if (profileCaption) {
             profileCaption.textContent = currentUsername === 'Guest'
-                ? 'Connecte-toi pour personnaliser ton profil.'
-                : 'Gère ici ta photo et ton nom d\'utilisateur.';
+                ? 'Log in to personalize your profile.'
+                : 'Manage your picture and username here.';
         }
 
         if (usernameElement) {
             usernameElement.textContent = currentUsername === 'Guest'
-                ? 'Connecté en tant que : Guest'
-                : `Connecté en tant que : ${currentUsername}`;
+                ? 'Logged in as: Guest'
+                : `Logged in as: ${currentUsername}`;
         }
 
         renderAvatar(localStorage.getItem('avatarUrl'));
@@ -193,8 +193,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (changeAvatarButton) {
             changeAvatarButton.textContent = localStorage.getItem('avatarUrl')
-                ? 'Modifier la photo de profil'
-                : 'Ajouter une photo de profil';
+                ? 'Change profile picture'
+                : 'Add a profile picture';
         }
 
         if (usernameInput && currentUsername !== 'Guest') {
@@ -202,7 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (currentUsername === 'Guest') {
-            setProfileStatus('Connecte-toi pour modifier ton profil.');
+            setProfileStatus('Log in to edit your profile.');
             if (changeAvatarButton) {
                 changeAvatarButton.disabled = true;
             }
@@ -226,7 +226,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     profileFirstTimeBanner.classList.add('hidden');
                 }
                 if (changeAvatarButton) {
-                    changeAvatarButton.textContent = 'Modifier la photo de profil';
+                    changeAvatarButton.textContent = 'Change profile picture';
                 }
             }
         } catch (error) {
@@ -237,7 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (changeAvatarButton && avatarInput) {
         changeAvatarButton.addEventListener('click', () => {
             if (currentUsername === 'Guest') {
-                setProfileStatus('Connecte-toi avant de téléverser une photo.', true);
+                setProfileStatus('Log in before uploading a picture.', true);
                 return;
             }
 

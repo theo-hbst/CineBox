@@ -3,13 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="author" content="Théo" />
+    <meta name="author" content="Theo" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="/public/css/style.css" rel="stylesheet" />
     <link href="/public/css/additional.css" rel="stylesheet" />
     <link rel="shortcut icon" href="/public/imgs/icon.ico" />
     <link rel="apple-touch-icon" href="/public/imgs/icon.ico" />
-    <title>CineBox Streaming</title>
+    <title>MovieShare Streaming</title>
+    <script src="/public/js/csrf.js"></script>
+    <script src="/public/js/nav-admin.js"></script>
     <script defer src="/public/js/cdn.min.js"></script>
     <script src="/public/js/redirect.js"></script>
   </head>
@@ -31,7 +33,7 @@
             ></path>
           </svg>
           <div class="tracking-wide text-black dark:text-white">
-            CineBox<span class="text-red-600">.</span>
+            MovieShare<span class="text-red-600">.</span>
           </div>
         </div>
 
@@ -39,7 +41,7 @@
         <div
           class="mt-12 flex flex-col gap-y-4 text-gray-500 fill-gray-500 text-sm"
         >
-          <div class="text-gray-400/70 font-medium uppercase">Contenu</div>
+          <div class="text-gray-400/70 font-medium uppercase">Content</div>
           <a
             class="flex items-center space-x-2 py-1 dark:text-white font-semibold border-r-4 border-r-red-600 pr-20"
             href="home.html"
@@ -53,7 +55,7 @@
                 d="M5 22h14v0c1.1 0 2-.9 2-2v-9 0c0-.27-.11-.53-.29-.71l-8-8v0c-.4-.39-1.02-.39-1.41 0l-8 8h0c-.2.18-.3.44-.3.71v9 0c0 1.1.89 2 2 2Zm5-2v-5h4v5Zm-5-8.59l7-7 7 7V20h-3v-5 0c0-1.11-.9-2-2-2h-4v0c-1.11 0-2 .89-2 2v5H5Z"
               ></path>
             </svg>
-            <span>Accueil</span>
+            <span>Home</span>
           </a>
 
           <a
@@ -74,7 +76,7 @@
                 ></path>
               </g>
             </svg>
-            <span>Séries</span>
+            <span>Series</span>
           </a>
 
           <a
@@ -93,7 +95,7 @@
                 <path d="M8 16l5.991-2 2-6 -6 2Z"></path>
               </g>
             </svg>
-            <span>Films</span>
+            <span>Movies</span>
           </a>
 
           <a
@@ -131,7 +133,7 @@
                 <path d="M11 6h2v2h-2Zm4 0h2v2h-2Zm0 4.03h2v1.96h-2Zm0 3.96h2v2h-2Zm-8 1h2v2H7Z"></path>
               </g>
             </svg>
-            <span>Fichiers</span>
+            <span>Files</span>
           </a>
 
           <div class="mt-8 text-gray-400/70 font-medium uppercase">General</div>
@@ -148,7 +150,7 @@
                 d="M12 2v0C9.23 2 7 4.23 7 7c0 2.76 2.23 5 5 5 2.76 0 5-2.24 5-5v0c0-2.77-2.24-5-5-5Zm0 8v0c-1.66 0-3-1.35-3-3 0-1.66 1.34-3 3-3 1.65 0 3 1.34 3 3v0c0 1.65-1.35 3-3 3Zm9 11v-1 0c0-3.87-3.14-7-7-7h-4v0c-3.87 0-7 3.13-7 7v1h2v-1 0c0-2.77 2.23-5 5-5h4v0c2.76 0 5 2.23 5 5v1Z"
               ></path>
             </svg>
-            <span>Profil</span>
+            <span>Profile</span>
           </a>
 
           <a
@@ -167,12 +169,12 @@
                 ></path>
               </g>
             </svg>
-            <span>Se déconnecter</span>
+            <span>Log out</span>
           </a>
 
           <a class="icon-link hover:border-r-4 hover:border-r-red-600 hover:font-semibold dark:hover:text-white" href="server.html">
-            <img class="icon" src="/public/imgs/server-settings.png" alt="Paramètres du serveur" />
-            <span class="icon-text">Serveur</span>
+            <img class="icon" src="/public/imgs/server-settings.png" alt="Server settings" />
+            <span class="icon-text">Server</span>
           </a>
 
           <div class="mt-8 text-gray-400/70 font-medium uppercase">Contact</div>
@@ -200,7 +202,7 @@
             </svg>
           </label>
           <div class="tracking-wide dark:text-white flex-1" style="margin-left: 5rem; margin-top: 0.1rem;">
-            CineBox<span class="text-red-600">.</span>
+            MovieShare<span class="text-red-600">.</span>
           </div>
         </header>
 
@@ -211,13 +213,13 @@
         <aside class="mobile-sidebar" id="mobile-sidebar">
           <div class="font-bold text-lg flex items-center gap-x-3 mb-8">
             <div class="tracking-wide dark:text-white">
-              CineBox<span class="text-red-600">.</span>
+              MovieShare<span class="text-red-600">.</span>
             </div>
           </div>
 
           <!-- Menu Mobile -->
           <div class="flex flex-col gap-y-4 text-gray-500 fill-gray-500 text-sm">
-            <div class="mt-8 text-gray-400/70 font-medium uppercase">Contenu</div>
+            <div class="mt-8 text-gray-400/70 font-medium uppercase">Content</div>
             <a
               class="flex items-center space-x-2 py-1 dark:text-white font-semibold border-r-4 border-r-red-600 pr-20"
               href="home.html"
@@ -225,7 +227,7 @@
               <svg class="h-5 w-5 fill-red-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                 <path d="M5 22h14v0c1.1 0 2-.9 2-2v-9 0c0-.27-.11-.53-.29-.71l-8-8v0c-.4-.39-1.02-.39-1.41 0l-8 8h0c-.2.18-.3.44-.3.71v9 0c0 1.1.89 2 2 2Zm5-2v-5h4v5Zm-5-8.59l7-7 7 7V20h-3v-5 0c0-1.11-.9-2-2-2h-4v0c-1.11 0-2 .89-2 2v5H5Z"></path>
               </svg>
-              <span>Accueil</span>
+              <span>Home</span>
             </a>
 
             <a
@@ -238,7 +240,7 @@
                   <path d="M12 8v0c-2.21 0-4 1.79-4 4 0 2.2 1.79 4 4 4 2.2 0 4-1.8 4-4v0c0-2.21-1.8-4-4-4Zm0 6v0c-1.11 0-2-.9-2-2 0-1.11.89-2 2-2 1.1 0 2 .89 2 2v0c0 1.1-.9 2-2 2Z"></path>
                 </g>
               </svg>
-              <span>Séries</span>
+              <span>Series</span>
             </a>
 
             <a
@@ -251,7 +253,7 @@
                   <path d="M8 16l5.991-2 2-6 -6 2Z"></path>
                 </g>
               </svg>
-              <span>Films</span>
+              <span>Movies</span>
             </a>
 
             <a
@@ -277,7 +279,7 @@
                   <path d="M11 6h2v2h-2Zm4 0h2v2h-2Zm0 4.03h2v1.96h-2Zm0 3.96h2v2h-2Zm-8 1h2v2H7Z"></path>
                 </g>
               </svg>
-              <span>Fichiers</span>
+              <span>Files</span>
             </a>
 
             <div class="mt-8 text-gray-400/70 font-medium uppercase">General</div>
@@ -288,7 +290,7 @@
               <svg class="h-5 w-5 group-hover:fill-red-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                 <path d="M12 2v0C9.23 2 7 4.23 7 7c0 2.76 2.23 5 5 5 2.76 0 5-2.24 5-5v0c0-2.77-2.24-5-5-5Zm0 8v0c-1.66 0-3-1.35-3-3 0-1.66 1.34-3 3-3 1.65 0 3 1.34 3 3v0c0 1.65-1.35 3-3 3Zm9 11v-1 0c0-3.87-3.14-7-7-7h-4v0c-3.87 0-7 3.13-7 7v1h2v-1 0c0-2.77 2.23-5 5-5h4v0c2.76 0 5 2.23 5 5v1Z"></path>
               </svg>
-              <span>Profil</span>
+              <span>Profile</span>
             </a>
 
             <a
@@ -301,12 +303,12 @@
                   <path d="M20 3h-9c-1.11 0-2 .89-2 2v4h2V5h9v14h-9v-4H9v4c0 1.1.89 2 2 2h9c1.1 0 2-.9 2-2V5c0-1.11-.9-2-2-2Z"></path>
                 </g>
               </svg>
-              <span>Se déconnecter</span>
+              <span>Log out</span>
             </a>
 
             <a class="icon-link hover:border-r-4 hover:border-r-red-600 hover:font-semibold dark:hover:text-white" href="server.html">
-              <img class="icon" src="/public/imgs/server-settings.png" alt="Paramètres du serveur" />
-              <span class="icon-text">Serveur</span>
+              <img class="icon" src="/public/imgs/server-settings.png" alt="Server settings" />
+              <span class="icon-text">Server</span>
             </a>
 
             <div class="mt-8 text-gray-400/70 font-medium uppercase">Contact</div>
@@ -323,12 +325,12 @@
 
         <section>
           <div class="scraper_results">
-            <h1 class="moviesText">#24 Top Films</h1>
+            <h1 class="moviesText">#24 Top Movies</h1>
             <div id="loading-indicator" style="display:none;color:#fff;text-align:center;padding:20px;">
-              🔄 Mise à jour des films en cours...
+              🔄 Updating movies...
             </div>
             <div class="mb-4 flex justify-center">
-              <button id="refresh-scraper" class="refresh-scraper-btn">Rafraîchir le scraping</button>
+              <button id="refresh-scraper" class="refresh-scraper-btn">Refresh scraping</button>
             </div>
             <div id="movies" class="movies-grid"></div>
           </div>
@@ -361,18 +363,33 @@
                   movieElement.href = movie.url || '#';
                   movieElement.target = '_blank';
                   movieElement.rel = 'noreferrer';
-                  movieElement.innerHTML = `
-                    <img src="${movie.poster || '/public/imgs/placeholder.jpg'}" alt="${movie.name || movie.title}" width="100">
-                    <div class="movie-info">
-                      <span style="font-size: 1.2em;">${movie.name || movie.title}</span>
-                      <span>Année: ${movie.year || movie.release_year || 'N/A'}</span>
-                    </div>
-                  `;
+
+                  const movieName = movie.name || movie.title || '';
+
+                  const img = document.createElement('img');
+                  img.src = movie.poster || '/public/imgs/placeholder.jpg';
+                  img.alt = movieName;
+                  img.width = 100;
+
+                  const infoDiv = document.createElement('div');
+                  infoDiv.className = 'movie-info';
+
+                  const nameSpan = document.createElement('span');
+                  nameSpan.style.fontSize = '1.2em';
+                  nameSpan.textContent = movieName;
+
+                  const yearSpan = document.createElement('span');
+                  yearSpan.textContent = `Year: ${movie.year || movie.release_year || 'N/A'}`;
+
+                  infoDiv.appendChild(nameSpan);
+                  infoDiv.appendChild(yearSpan);
+                  movieElement.appendChild(img);
+                  movieElement.appendChild(infoDiv);
                   moviesContainer.appendChild(movieElement);
                 });
               } catch (error) {
                 console.error('Error loading movies:', error);
-                moviesContainer.innerHTML = '<p style="color:#fff;text-align:center;">Erreur lors du chargement des films.</p>';
+                moviesContainer.innerHTML = '<p style="color:#fff;text-align:center;">Error loading movies.</p>';
               } finally {
                 loadingIndicator.style.display = 'none';
               }
@@ -385,7 +402,7 @@
               button.disabled = true;
 
               try {
-                const response = await fetch('/scraper', { method: 'POST' });
+                const response = await csrfFetch('/scraper', { method: 'POST' });
                 if (!response.ok) {
                   throw new Error('Scraping request failed');
                 }
@@ -393,7 +410,7 @@
                 await loadMovies();
               } catch (error) {
                 console.error(error);
-                alert('Erreur lors du rafraîchissement du scraping.');
+                alert('Error while refreshing the scraping.');
               } finally {
                 button.textContent = originalText;
                 button.disabled = false;

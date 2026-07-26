@@ -1,6 +1,6 @@
 """
 public/python/scraper.py
-Fetch les 24 films les plus populaires du moment sur IMDB et les écrit dans un fichier public/json/scrapedMoviesTemp.json.
+Fetches the 24 currently most popular movies on IMDb and writes them to public/json/scrapedMoviesTemp.json.
 """
 
 import json
@@ -85,7 +85,7 @@ def fetch_moviemeter_movies(limit: int = LIMIT) -> dict:
 def main() -> int:
     try:
         movies = fetch_moviemeter_movies(LIMIT)
-    except Exception as exc:  # Afficher les erreurs éventuelles
+    except Exception as exc:  # Print any errors that occur
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1
 

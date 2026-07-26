@@ -1,12 +1,12 @@
-Créer un dossier par série/saison et y placer tous les épisodes.
-Créer un dossier 'src' dans chaque dossier de série/saison.
-Ajouter les fichiers .jpg dans le dossier 'src' avec le même nom que l'episode.
+Create one folder per series/season and place all episodes in it.
+Create a 'src' folder inside each series/season folder.
+Add .jpg files in the 'src' folder with the same name as the episode.
 
-Exemple:
+Example:
 ```
 /Media/series/
-└── NomDeLaSerie/
-    └── Saison1/
+└── SeriesName/
+    └── Season1/
         ├── Episode1.mkv
         ├── Episode2.mkv
         └── src/
