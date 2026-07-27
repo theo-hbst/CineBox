@@ -297,11 +297,7 @@ document.addEventListener('DOMContentLoaded', () => {
         darkModeToggle.addEventListener('change', async () => {
             const nextValue = darkModeToggle.checked;
             applyDarkMode(nextValue); // instant visual feedback
-
-            if (currentUsername === 'Guest') {
-                return;
-            }
-
+            
             try {
                 const response = await csrfFetch('/api/users/darkmode', {
                     method: 'POST',
