@@ -20,10 +20,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     backButton.style.display = 'none';
                 }
 
-                // Mettre à jour l'affichage du chemin actuel
+                // Update the current path display
                 currentPathDisplay.textContent = `Emplacement: /${path}`;
 
-                // Trier les éléments pour que les dossiers apparaissent en premier
+                // Sort items so folders appear first
                 data.sort((a, b) => b.isDirectory - a.isDirectory);
 
                 data.forEach(item => {
@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (!item.isDirectory) {
                         const downloadButton = document.createElement('button');
-                        downloadButton.textContent = 'Télécharger';
+                        downloadButton.textContent = 'Download';
                         downloadButton.addEventListener('click', () => {
                             downloadFile(item.path);
                         });

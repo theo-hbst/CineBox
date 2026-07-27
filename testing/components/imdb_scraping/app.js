@@ -15,7 +15,7 @@ function renderMovies(data) {
   moviesContainer.innerHTML = '';
 
   const results = Array.isArray(data.results) ? data.results : [];
-  statusText.textContent = results.length > 0 ? 'Scraping IMDb réussi.' : 'Aucun film récupéré.';
+  statusText.textContent = results.length > 0 ? 'IMDb scraping succeeded.' : 'No movies retrieved.';
   countText.textContent = `${results.length} film(s)`;
 
   for (const movie of results) {
@@ -42,12 +42,12 @@ function renderMovies(data) {
 
 async function refreshMovies() {
   const statusText = document.getElementById('statusText');
-  statusText.textContent = 'Rafraîchissement en cours...';
+  statusText.textContent = 'Refreshing...';
 
   const response = await fetch('/refresh', { method: 'POST' });
   if (!response.ok) {
     const payload = await response.json().catch(() => ({}));
-    throw new Error(payload.error || 'Impossible de rafraîchir le scraping.');
+    throw new Error(payload.error || 'Unable to refresh the scraping.');
   }
 
   const data = await fetchMovies();

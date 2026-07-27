@@ -1,4 +1,0 @@
-requests_html
-requests
-lxml
-lxml_html_clean

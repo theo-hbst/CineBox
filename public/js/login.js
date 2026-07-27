@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             localStorage.setItem('username', payload.username);
             localStorage.setItem('admin', payload.admin ? '1' : '0');
+            localStorage.setItem('darkMode', payload.darkMode ? '1' : '0');
             if (payload.avatarUrl) {
                 localStorage.setItem('avatarUrl', payload.avatarUrl);
             } else {
@@ -55,6 +56,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             localStorage.setItem('username', payload.username);
             localStorage.setItem('admin', payload.admin ? '1' : '0');
+            localStorage.setItem('darkMode', payload.darkMode ? '1' : '0');
             if (payload.avatarUrl) {
                 localStorage.setItem('avatarUrl', payload.avatarUrl);
             } else {

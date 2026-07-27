@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const cancelUsernameButton = document.getElementById('cancel-username-button');
     const profileStatus = document.getElementById('profile-status');
     const profileCaption = document.getElementById('profile-caption');
+    const darkModeToggle = document.getElementById('dark-mode-toggle');
 
     function getInitials(value) {
         return value
@@ -172,6 +173,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function applyDarkMode(isDark) {
+        document.documentElement.classList.toggle('dark', isDark);
+        document.documentElement.classList.toggle('light', !isDark);
+        localStorage.setItem('darkMode', isDark ? '1' : '0');
+        if (darkModeToggle) {
+            darkModeToggle.checked = isDark;
+        }
+    }
+
     async function loadProfile() {
         if (profileCaption) {
             profileCaption.textContent = currentUsername === 'Guest'
@@ -186,6 +196,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         renderAvatar(localStorage.getItem('avatarUrl'));
+
+        if (darkModeToggle) {
+            darkModeToggle.checked = localStorage.getItem('darkMode') === '1';
+        }
 
         if (profileFirstTimeBanner && currentUsername !== 'Guest') {
             profileFirstTimeBanner.classList.toggle('hidden', Boolean(localStorage.getItem('avatarUrl')));
@@ -209,6 +223,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (toggleUsernameFormButton) {
                 toggleUsernameFormButton.disabled = true;
             }
+            if (darkModeToggle) {
+                darkModeToggle.disabled = true;
+            }
             return;
         }
 
@@ -229,6 +246,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     changeAvatarButton.textContent = 'Change profile picture';
                 }
             }
+            // Keep the toggle and the theme in sync with what's stored server-side
+            // (covers first login on a new device where localStorage is empty).
+            applyDarkMode(!!payload.darkMode);
         } catch (error) {
             console.error(error);
         }
@@ -270,6 +290,33 @@ document.addEventListener('DOMContentLoaded', () => {
         usernameForm.addEventListener('submit', async (event) => {
             event.preventDefault();
             await updateUsername(usernameInput.value);
+        });
+    }
+
+    if (darkModeToggle) {
+        darkModeToggle.addEventListener('change', async () => {
+            const nextValue = darkModeToggle.checked;
+            applyDarkMode(nextValue); // instant visual feedback
+
+            if (currentUsername === 'Guest') {
+                return;
+            }
+
+            try {
+                const response = await csrfFetch('/api/users/darkmode', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ darkMode: nextValue }),
+                });
+
+                if (!response.ok) {
+                    throw new Error('Unable to save dark mode preference.');
+                }
+            } catch (error) {
+                console.error(error);
+                applyDarkMode(!nextValue); // roll back on failure
+                setProfileStatus('Error while saving your theme preference.', true);
+            }
         });
     }
 

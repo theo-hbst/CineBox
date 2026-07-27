@@ -4,8 +4,8 @@
       "username": "admin",
       "admin": true,
       "avatarUrl": null,
-      "passwordSalt": "c3ef12750b1a914da927079004342741",
-      "passwordHash": "9ea3395bfaa20e0bbec8c300db96262749614bedffa4283ab50bf9478a4dee16d4a3bc3c9e78cb2626a5ee5e004f51f2ddb0d9f6a47b7eca4970ce6e0c02b8d8"
+      "passwordSalt": "5981653975f250090d3c411e40af942d",
+      "passwordHash": "145f66803988e90e7804699f1ab717dca3b763dbd14e8f4f312dce775bbc4d5764df1d65cf62cb8b5823a2d1449290c499c38373deac1f5a7ca039c5420116b3"
     }
   ]
 }
