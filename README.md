@@ -7,14 +7,16 @@ alt="GitHub issues">
  </a>
 <a href=https://github.com/theo-hbst/CineBox/pulse><img src=https://img.shields.io/github/repo-size/theo-hbst/CineBox?style=tokyonight&logo=GitHub&logoColor=white&color=ff8f00></a>
 
-# CineBox
-
 # TODO
-- Fix affichage du mode mobile (logo Cinebox)
-- Couleur adaptative de certains textes mobile
-- Couleur adaptative burger button mobile
-- Régler problème de Profile qui reset couleur en light mode quand on va sur la page
-- Couleur adaptative textes pc
+- [ ] Fix affichage du mode mobile (logo Cinebox)
+- [ ] Couleur adaptative de certains textes mobile
+- [ ] Couleur adaptative burger button mobile
+- [ ] Régler problème de Profile qui reset couleur en light mode quand on va sur la page
+- [ ] Couleur adaptative textes pc
+- [ ] Créer release
+- [ ] Merge branches
+
+# CineBox
 
 CineBox is a self-hosted media server built for one purpose: let your family browse, watch, and manage the movies and shows on your own machine, without handing that job to a third-party streaming app. It scrapes trending titles from IMDb, comes with a file manager, a torrent client and an admin panel for managing accounts, all wrapped in a dashboard you run yourself.
 
