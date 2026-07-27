@@ -1,6 +1,6 @@
 # CineBox
 
-CineBox is a self-hosted media server built for one purpose: let your family browse, watch, and manage the movies and shows on your own machine, without handing that job to a third-party streaming app. It scrapes trending titles from IMDb, comes with a file manager, a torrent client, and an admin panel for managing accounts — all wrapped in a dashboard you run yourself.
+CineBox is a self-hosted media server built for one purpose: let your family browse, watch, and manage the movies and shows on your own machine, without handing that job to a third-party streaming app. It scrapes trending titles from IMDb, comes with a file manager, a torrent client, and an admin panel for managing accounts: all wrapped in a dashboard you run yourself.
 
 It started as a personal project to give my family an easy way to watch what was already on our home server, and grew from there into something worth sharing.
 
