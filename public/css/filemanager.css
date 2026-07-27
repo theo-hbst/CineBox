@@ -341,3 +341,72 @@ h1 {
 .file-item[data-is-directory="false"] .file-name::before {
     content: "📄";
 }
+/* --- Gestion des utilisateurs (page admin) : même style que le file manager --- */
+#user-manager {
+    padding: 20px;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.dark #user-manager {
+    background-color: #18181b;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+}
+
+.admin-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.dark .admin-toggle {
+    color: #d1d5db;
+}
+
+.admin-toggle input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #dc2626;
+    cursor: pointer;
+}
+
+.file-item .admin-badge {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 8px;
+    background-color: #dc2626;
+    color: white;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    vertical-align: middle;
+}
+
+#add-user-form.move-controls {
+    margin-bottom: 16px;
+}
+
+#add-user-form input[type="text"],
+#add-user-form input[type="password"] {
+    padding: 6px 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 13px;
+    background-color: white;
+    color: #111827;
+}
+
+.dark #add-user-form input[type="text"],
+.dark #add-user-form input[type="password"] {
+    background-color: #374151;
+    border-color: #4b5563;
+    color: #f9fafb;
+}

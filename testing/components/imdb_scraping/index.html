@@ -1,33 +1,32 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Films Populaires</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IMDb Moviemeter Demo</title>
+  <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
-    <div id="movies" class="movies-grid"></div>
-    <script>
-        fetch('popular_movies.json')
-            .then(response => response.json())
-            .then(data => {
-                const moviesContainer = document.getElementById('movies');
-                data.results.forEach(movie => {
-                    const movieElement = document.createElement('a');
-                    movieElement.className = 'movie';
-                    movieElement.href = movie.url;
-                    movieElement.target = '_blank';
-                    movieElement.innerHTML = `
-                        <img src="${movie.poster}" alt="${movie.name}" width="100">
-                        <div class="movie-info">
-                            <span>${movie.name}</span>
-                        </div>
-                    `;
-                    moviesContainer.appendChild(movieElement);
-                });
-            })
-            .catch(error => console.error('Error loading JSON:', error));
-    </script>
+  <main class="shell">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">Standalone demo</p>
+        <h1>IMDb moviemeter scraper</h1>
+        <p class="lede">A simple Python server fetches popular IMDb movies server-side, then this page displays them in a grid.</p>
+      </div>
+      <div class="actions">
+        <button id="refreshButton" type="button">Refresh scraping</button>
+        <a href="/popular_movies.json" target="_blank" rel="noreferrer">Voir le JSON</a>
+      </div>
+    </header>
+
+    <section class="status-bar">
+      <span id="statusText">Chargement...</span>
+      <span id="countText"></span>
+    </section>
+
+    <section id="movies" class="movies-grid"></section>
+  </main>
+  <script src="/app.js"></script>
 </body>
 </html>

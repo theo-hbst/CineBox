@@ -16,6 +16,6 @@ def test_xss(url, param_dict):
         except requests.exceptions.RequestException as e:
             print(f"An error occurred: {e}")
 
-# Remplacez 'http://yourserver.com/form' par l'URL de votre serveur
-# Remplacez 'field1' et 'field2' par les noms de vos paramètres
+# Replace 'http://yourserver.com/form' with your server's URL
+# Replace 'field1' and 'field2' with your parameter names
 test_xss('http://127.0.0.1:3000', {'login_field': '', 'password_field': ''})

@@ -16,6 +16,6 @@ def test_ssrf(url, param_dict):
         except requests.exceptions.RequestException as e:
             print(f"An error occurred: {e}")
 
-# Remplacez 'http://yourserver.com/form' par l'URL de votre serveur
-# Remplacez 'url' par le nom de votre paramètre
+# Replace 'http://yourserver.com/form' with your server's URL
+# Replace 'url' with your parameter name
 test_ssrf('http://yourserver.com/form', {'url': ''})

@@ -2,22 +2,22 @@ import requests
 import json
 
 def test_json_injection(url, param_dict):
-    # Payload d'injection JSON
+    # JSON injection payload
     payload = "' OR '1'='1"
 
     for param in param_dict:
-        # Copier les paramètres originaux
+        # Copy the original parameters
         injected_param = param_dict.copy()
-        # Injecter la charge utile
+        # Inject the payload
         injected_param[param] += payload
         try:
-            # Envoyer une requête POST avec les données JSON
+            # Send a POST request with the JSON data
             response = requests.post(url, json=injected_param)
             if response.status_code == 200:
                 print(f"Potential JSON Injection vulnerability detected in parameter: {param}")
         except requests.exceptions.RequestException as e:
             print(f"An error occurred: {e}")
 
-# Remplacez 'http://yourserver.com/api' par l'URL de votre serveur
-# Remplacez 'field1' et 'field2' par les noms de vos paramètres
+# Replace 'http://yourserver.com/api' with your server's URL
+# Replace 'field1' and 'field2' with your parameter names
 test_json_injection('http://127.0.0.1:3000', {'login_field': '', 'password_field': ''})

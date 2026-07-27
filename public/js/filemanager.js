@@ -13,26 +13,26 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(response => response.json())
             .then(data => {
                 fileManager.innerHTML = '';
-                
-                // Ajouter les contrôles de déplacement
+
+                // Add the move controls
                 const moveControls = document.createElement('div');
                 moveControls.className = 'move-controls';
-                
+
                 if (destinationSelectionMode) {
                     moveControls.innerHTML = `
-                        <button id="cancel-destination-selection">Annuler la sélection de destination</button>
-                        <span class="selected-count">Sélectionnez un dossier de destination pour ${itemsToMove.length} élément(s)</span>
+                        <button id="cancel-destination-selection">Cancel destination selection</button>
+                        <span class="selected-count">Select a destination folder for ${itemsToMove.length} item(s)</span>
                     `;
                 } else {
                     moveControls.innerHTML = `
-                        <button id="toggle-move-mode">${moveMode ? 'Annuler le déplacement' : 'Mode déplacement'}</button>
-                        ${moveMode ? '<button id="move-to-parent">Déplacer vers dossier supérieur</button>' : ''}
-                        ${moveMode && selectedItems.length > 0 ? '<button id="move-to-selected-folder">Déplacer vers dossier sélectionné</button>' : ''}
-                        ${moveMode && selectedItems.length > 0 ? `<span class="selected-count">${selectedItems.length} élément(s) sélectionné(s)</span>` : ''}
+                        <button id="toggle-move-mode">${moveMode ? 'Cancel move' : 'Move mode'}</button>
+                        ${moveMode ? '<button id="move-to-parent">Move to parent folder</button>' : ''}
+                        ${moveMode && selectedItems.length > 0 ? '<button id="move-to-selected-folder">Move to selected folder</button>' : ''}
+                        ${moveMode && selectedItems.length > 0 ? `<span class="selected-count">${selectedItems.length} item(s) selected</span>` : ''}
                     `;
                 }
                 fileManager.appendChild(moveControls);
-                
+
                 const backButtonContainer = document.createElement('div');
                 backButtonContainer.id = 'back-button-container';
                 backButtonContainer.appendChild(backButton);
@@ -44,18 +44,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     backButton.style.display = 'none';
                 }
 
-                // Mettre à jour l'affichage du chemin actuel
-                currentPathDisplay.textContent = `Emplacement: /${path}`;
+                // Update the current path display
+                currentPathDisplay.textContent = `Location: /${path}`;
 
-                // Trier les éléments pour que les dossiers apparaissent en premier
+                // Sort items so folders appear first
                 data.sort((a, b) => b.isDirectory - a.isDirectory);
 
                 data.forEach(item => {
                     const fileItem = document.createElement('div');
                     fileItem.className = 'file-item';
                     fileItem.setAttribute('data-is-directory', item.isDirectory);
-                    
-                    // Ajouter une classe si l'élément est sélectionné
+
+                    // Add a class if the item is selected
                     if (selectedItems.some(selected => selected.path === item.path)) {
                         fileItem.classList.add('selected');
                     }
@@ -63,20 +63,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     const fileName = document.createElement('span');
                     fileName.className = 'file-name';
                     fileName.textContent = item.isDirectory ? `${item.name}/` : item.name;
-                    
+
                     fileName.addEventListener('click', () => {
                         if (destinationSelectionMode) {
-                            // En mode sélection de destination, seuls les dossiers peuvent être sélectionnés
+                            // In destination selection mode, only folders can be selected
                             if (item.isDirectory) {
                                 moveItemsToDestination(item.path);
                             } else {
-                                alert('Veuillez sélectionner un dossier comme destination');
+                                alert('Please select a folder as the destination');
                             }
                         } else if (moveMode) {
-                            // En mode déplacement, sélectionner/désélectionner l'élément
+                            // In move mode, select/deselect the item
                             toggleSelection(item, fileItem);
                         } else if (item.isDirectory) {
-                            // Navigation normale
+                            // Regular navigation
                             currentPath = path ? `${path}/${item.name}` : item.name;
                             fetchFiles(currentPath);
                         }
@@ -87,15 +87,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     fileActions.style.display = (moveMode || destinationSelectionMode) ? 'none' : 'block';
 
                     const deleteButton = document.createElement('button');
-                    deleteButton.textContent = 'Supprimer';
+                    deleteButton.textContent = 'Delete';
                     deleteButton.addEventListener('click', () => {
-                        if (confirm(`Êtes-vous sûr de vouloir supprimer ${item.name} ?`)) {
+                        if (confirm(`Are you sure you want to delete ${item.name}?`)) {
                             deleteFile(item.path);
                         }
                     });
 
                     const renameButton = document.createElement('button');
-                    renameButton.textContent = 'Renommer';
+                    renameButton.textContent = 'Rename';
                     const renameInput = document.createElement('input');
                     renameInput.type = 'text';
                     renameInput.value = item.name;
@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (!item.isDirectory) {
                         const downloadButton = document.createElement('button');
-                        downloadButton.textContent = 'Télécharger';
+                        downloadButton.textContent = 'Download';
                         downloadButton.addEventListener('click', () => {
                             downloadFile(item.path);
                         });
@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     fileManager.appendChild(fileItem);
                 });
 
-                // Ajouter les event listeners pour les contrôles de déplacement
+                // Add the event listeners for the move controls
                 setupMoveControls();
             });
     }
@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const moveToParentButton = document.getElementById('move-to-parent');
         const moveToSelectedFolderButton = document.getElementById('move-to-selected-folder');
         const cancelDestinationButton = document.getElementById('cancel-destination-selection');
-        
+
         if (toggleMoveButton) {
             toggleMoveButton.addEventListener('click', () => {
                 moveMode = !moveMode;
@@ -143,21 +143,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 fetchFiles(currentPath);
             });
         }
-        
+
         if (moveToParentButton) {
             moveToParentButton.addEventListener('click', () => {
                 const parentPath = getParentPath(currentPath);
                 moveSelectedItems(parentPath);
             });
         }
-        
+
         if (moveToSelectedFolderButton) {
             moveToSelectedFolderButton.addEventListener('click', () => {
                 if (selectedItems.length === 0) {
-                    alert('Aucun élément sélectionné');
+                    alert('No item selected');
                     return;
                 }
-                // Passer en mode sélection de destination
+                // Switch to destination selection mode
                 itemsToMove = [...selectedItems];
                 selectedItems = [];
                 destinationSelectionMode = true;
@@ -165,7 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 fetchFiles(currentPath);
             });
         }
-        
+
         if (cancelDestinationButton) {
             cancelDestinationButton.addEventListener('click', () => {
                 destinationSelectionMode = false;
@@ -185,12 +185,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function moveItemsToDestination(destinationPath) {
         if (itemsToMove.length === 0) {
-            alert('Aucun élément à déplacer');
+            alert('No item to move');
             return;
         }
 
         const promises = itemsToMove.map(item => {
-            return fetch('/move', {
+            return csrfFetch('/move', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -206,17 +206,17 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(responses => {
                 const failedMoves = responses.filter(response => !response.ok);
                 if (failedMoves.length > 0) {
-                    alert(`Erreur lors du déplacement de ${failedMoves.length} élément(s)`);
+                    alert(`Error moving ${failedMoves.length} item(s)`);
                 } else {
-                    alert(`${itemsToMove.length} élément(s) déplacé(s) avec succès vers ${destinationPath}`);
+                    alert(`${itemsToMove.length} item(s) successfully moved to ${destinationPath}`);
                 }
                 itemsToMove = [];
                 destinationSelectionMode = false;
                 fetchFiles(currentPath);
             })
             .catch(error => {
-                console.error('Erreur lors du déplacement:', error);
-                alert('Erreur lors du déplacement des fichiers');
+                console.error('Error moving items:', error);
+                alert('Error moving files');
             });
     }
 
@@ -229,17 +229,17 @@ document.addEventListener('DOMContentLoaded', () => {
             selectedItems.push(item);
             fileElement.classList.add('selected');
         }
-        fetchFiles(currentPath); // Rafraîchir pour mettre à jour le compteur
+        fetchFiles(currentPath); // Refresh to update the counter
     }
 
     function moveSelectedItems(destinationPath) {
         if (selectedItems.length === 0) {
-            alert('Aucun élément sélectionné');
+            alert('No item selected');
             return;
         }
 
         const promises = selectedItems.map(item => {
-            return fetch('/move', {
+            return csrfFetch('/move', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -255,27 +255,27 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(responses => {
                 const failedMoves = responses.filter(response => !response.ok);
                 if (failedMoves.length > 0) {
-                    alert(`Erreur lors du déplacement de ${failedMoves.length} élément(s)`);
+                    alert(`Error moving ${failedMoves.length} item(s)`);
                 } else {
-                    alert(`${selectedItems.length} élément(s) déplacé(s) avec succès`);
+                    alert(`${selectedItems.length} item(s) successfully moved`);
                 }
                 selectedItems = [];
                 moveMode = false;
                 fetchFiles(currentPath);
             })
             .catch(error => {
-                console.error('Erreur lors du déplacement:', error);
-                alert('Erreur lors du déplacement des fichiers');
+                console.error('Error moving items:', error);
+                alert('Error moving files');
             });
     }
 
     function deleteFile(path) {
-        fetch(`/delete?path=${path}`, { method: 'DELETE' })
+        csrfFetch(`/delete?path=${path}`, { method: 'DELETE' })
             .then(() => fetchFiles(currentPath));
     }
 
     function renameFile(oldPath, newPath) {
-        fetch(`/rename?oldPath=${oldPath}&newPath=${newPath}`, { method: 'POST' })
+        csrfFetch(`/rename?oldPath=${oldPath}&newPath=${newPath}`, { method: 'POST' })
             .then(() => fetchFiles(currentPath));
     }
 

@@ -1,6 +1,7 @@
-<html>
-  <header>
-    <title>Déconnecté</title>
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Logged out</title>
     <link rel="stylesheet" href="/public/css/fonts.css" type="text/css" media="all" />
     <link rel="stylesheet" href="/public/css/login.css" type="text/css" media="all" />
 
@@ -9,22 +10,34 @@
 
     <meta name="viewport" content="initial-scale=1" />
     <meta charset="utf-8" />
-
-    <script src="/public/js/jquery-1.11.2.min.js"></script>
-    <script src="/public/js/login.js"></script>
-  </header>
+  </head>
 
   <body>
     <script>
-      localStorage.removeItem("username");
-      setTimeout(function() {
-        window.location.href = "/";
-      }, 5000);
+      fetch('/api/config')
+        .then((res) => res.json())
+        .then((config) => {
+          if (config.noid) {
+            window.location.href = '/public/pages/content/home.html';
+            return;
+          }
+
+          localStorage.removeItem('username');
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 5000);
+        })
+        .catch(() => {
+          localStorage.removeItem('username');
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 5000);
+        });
     </script>
 
-    <h1>Déconnecté</h1>
-    <p>Vous avez été déconnecté de ce service avec succès!</p>
-    <p class="redirect-message">Vous serez redirigé vers la page d'accueil dans quelques secondes...</p>
-    <p class="footer">Secure Form - V1.4</p>
+    <h1>Logged out</h1>
+    <p>You have been successfully logged out of this service!</p>
+    <p class="redirect-message">You will be redirected to the home page in a few seconds...</p>
+    <p class="footer">V1.5</p>
   </body>
 </html>

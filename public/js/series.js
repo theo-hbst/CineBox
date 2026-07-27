@@ -23,27 +23,27 @@ document.addEventListener('DOMContentLoaded', () => {
           backButton.style.display = 'none';
         }
 
-        // Mettre à jour l'affichage du chemin actuel
-        currentPathDisplay.textContent = `Emplacement: /${path.replace(/^series\/?/, '')}`;
+        // Update the current path display
+        currentPathDisplay.textContent = `Location: /${path.replace(/^series\/?/, '')}`;
 
-        // Vérifier que data est un tableau avant d'appeler sort
+        // Check that data is an array before calling sort
         if (Array.isArray(data)) {
-          // Filtrer les dossiers src
+          // Filter out src folders
           data = data.filter(item => item.name !== 'src');
 
-          // Si on est à la racine, ne montrer que les dossiers
+          // If we're at the root, only show folders
           if (path === 'series') {
             data = data.filter(item => item.isDirectory);
           }
 
-          // Trier les éléments pour que les dossiers apparaissent en premier
+          // Sort items so folders appear first
           data.sort((a, b) => b.isDirectory - a.isDirectory);
 
           const seriesGrid = document.createElement('div');
           seriesGrid.className = 'series-grid';
 
           if (data.length === 0) {
-            // Centrage vertical et horizontal
+            // Vertical and horizontal centering
             const msg = document.createElement('div');
             msg.style.color = '#fff';
             msg.style.display = 'flex';
@@ -52,8 +52,8 @@ document.addEventListener('DOMContentLoaded', () => {
             msg.style.height = '60vh';
             msg.style.fontSize = '1.3rem';
             msg.textContent = path === 'series'
-              ? 'Aucune série disponible.'
-              : 'Aucun épisode disponible.';
+              ? 'No series available.'
+              : 'No episodes available.';
             seriesManager.appendChild(msg);
             return;
           }
@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 fetchSeriesFiles(currentPath);
               });
               fileItem.appendChild(fileName);
-              seriesManager.appendChild(fileItem); // Ajouter directement les dossiers au gestionnaire
+              seriesManager.appendChild(fileItem); // Add folders directly to the manager
             } else {
               const thumbnailPath = `/${path}/src/${item.name.replace(/\.[^/.]+$/, '')}.jpg`;
               const mediaThumbnail = document.createElement('img');
@@ -103,15 +103,15 @@ document.addEventListener('DOMContentLoaded', () => {
               const fileName = document.createElement('div');
               fileName.className = 'episode-title';
               fileName.textContent = item.name.replace(/_/g, ' ').replace(/\.[^/.]+$/, '');
-              fileItem.appendChild(fileName); // Ajouter le texte en bas du média
+              fileItem.appendChild(fileName); // Add the caption below the media
 
-              seriesGrid.appendChild(fileItem); // Ajouter les épisodes à la grille
+              seriesGrid.appendChild(fileItem); // Add the episode to the grid
             }
           });
 
           seriesManager.appendChild(seriesGrid);
         } else {
-          // Si data n'est pas un tableau, afficher un message d'erreur
+          // If data isn't an array, show an error message
           const msg = document.createElement('div');
           msg.style.color = '#fff';
           msg.style.display = 'flex';
@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
           msg.style.alignItems = 'center';
           msg.style.height = '60vh';
           msg.style.fontSize = '1.3rem';
-          msg.textContent = 'Erreur lors du chargement des séries.';
+          msg.textContent = 'Error loading series.';
           seriesManager.appendChild(msg);
         }
       });
@@ -140,6 +140,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   fetchSeriesFiles(currentPath);
 
-  // Pour le refresh auto toutes les 15s
+  // Auto-refresh every 15s
   setInterval(() => fetchSeriesFiles(currentPath), 15000);
 });

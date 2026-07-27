@@ -1,9 +1,16 @@
-$(document).ready(function () {
-    var username = localStorage.getItem('username');
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const configResponse = await fetch('/api/config');
+        const config = await configResponse.json();
 
-    if (!username) {
-        // User is not logged in, redirect to index.html
+        if (config.noid) {
+            return;
+        }
+    } catch (error) {
+        console.error(error);
+    }
+
+    if (!localStorage.getItem('username')) {
         window.location.href = '/';
-        alert('Vous devez vous connecter pour accéder à cette page');
     }
 });

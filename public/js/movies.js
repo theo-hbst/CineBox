@@ -31,35 +31,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 movieItem.classList.add('movie-item');
 
                 const movieThumbnail = document.createElement('img');
-                const thumbnailPath = `/Media/movies/src/${movie.name.replace(/\.[^/.]+$/, '')}.jpg`;
-                fetch(thumbnailPath, { method: 'HEAD' })
-                    .then(response => {
-                        if (response.ok) {
-                            movieThumbnail.src = thumbnailPath;
-                            movieItem.appendChild(movieThumbnail);
-                        } else {
-                            movieThumbnail.style.display = 'none';
-                            const blackRect = document.createElement('div');
-                            blackRect.classList.add('black-rectangle');
-                            blackRect.addEventListener('click', () => {
-                                videoPlayer.src = `/Media/movies/${movie.name}`;
-                                fullscreenVideo.style.display = 'flex';
-                                videoPlayer.play();
-                            });
-                            movieItem.appendChild(blackRect);
-                        }
-                        const movieTitle = document.createElement('div');
-                        movieTitle.classList.add('movie-title');
-                        movieTitle.textContent = movie.name.replace(/_/g, ' ').replace(/\.[^/.]+$/, '');
-                        movieItem.appendChild(movieTitle);
-                    });
+                const movieTitle = document.createElement('div');
+                movieTitle.classList.add('movie-title');
+                movieTitle.textContent = movie.name.replace(/_/g, ' ').replace(/\.[^/.]+$/, '');
 
-                movieThumbnail.alt = movie.name;
-                movieThumbnail.addEventListener('click', () => {
-                    videoPlayer.src = `/Media/movies/${movie.name}`;
-                    fullscreenVideo.style.display = 'flex';
-                    videoPlayer.play();
-                });
+                if (movie.thumbnail) {
+                    movieThumbnail.src = movie.thumbnail;
+                    movieThumbnail.alt = movie.name;
+                    movieThumbnail.addEventListener('click', () => {
+                        videoPlayer.src = movie.videoUrl;
+                        fullscreenVideo.style.display = 'flex';
+                        videoPlayer.play();
+                    });
+                    movieItem.appendChild(movieThumbnail);
+                } else {
+                    movieThumbnail.style.display = 'none';
+                    const blackRect = document.createElement('div');
+                    blackRect.classList.add('black-rectangle');
+                    blackRect.addEventListener('click', () => {
+                        videoPlayer.src = movie.videoUrl;
+                        fullscreenVideo.style.display = 'flex';
+                        videoPlayer.play();
+                    });
+                    movieItem.appendChild(blackRect);
+                }
+
+                movieItem.appendChild(movieTitle);
 
                 movieGrid.appendChild(movieItem);
             });

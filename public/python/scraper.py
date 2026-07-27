@@ -1,65 +1,101 @@
-import sys
-import os
-import json
-import threading
-from PyMovieDb import IMDB
-
-version = "1.2"
-logmessage = f"""
-
-
--------------------- START OF EXECUTION LOG --------------------
-ver.{version}
+"""
+public/python/scraper.py
+Fetches the 24 currently most popular movies on IMDb and writes them to public/json/scrapedMoviesTemp.json.
 """
 
-try:
-    imdb = IMDB()
-    res = imdb.popular_movies(genre=None, start_id=1, sort_by=None)
-    # returns top 24 popular movies starting from start id
+import json
+import sys
+from pathlib import Path
 
-    print(logmessage)
-    print("Scraping data sources from IMDb...")
+import requests
 
-    # Remplacer les séquences \n par des retours à la ligne réels
-    res_str = json.dumps(res, indent=4, ensure_ascii=False)
-    res_str = res_str.replace('\\n', '\n')
-    res_str = res_str.replace('\\', '')
+ROOT = Path(__file__).resolve().parent.parent.parent
+OUTPUT_FILE = ROOT / "public" / "json" / "scrapedMoviesTemp.json"
 
-    print("Data sources getting post-processed...")
+LIMIT = 24  # 24 premiers films (ajustable)
 
-    # Retirer les guillemets doubles au début et à la fin
-    if res_str.startswith('"') and res_str.endswith('"'):
-        res_str = res_str[1:-1]
 
-    # Limiter le contenu jusqu'à la ligne 171
-    lines = res_str.split('\n')
-    limited_content = '\n'.join(lines[:171])
+def fetch_moviemeter_movies(limit: int = LIMIT) -> dict:
+    query = """query MoviemeterChart($first: Int!, $sort: AdvancedTitleSearchSort) {
+    chartTitles(first: $first, chart: { chartType: MOST_POPULAR_MOVIES }, sort: $sort) {
+        edges {
+            currentRank
+            node {
+                id
+                titleText { text }
+                releaseYear { year }
+                primaryImage { url }
+            }
+        }
+    }
+}"""
 
-    # Retirer la virgule après le dernier élément
-    if limited_content.endswith(','):
-        limited_content = limited_content[:-1]
+    payload = {
+        "query": query,
+        "variables": {
+            "first": limit,
+            "sort": {"sortBy": "POPULARITY", "sortOrder": "ASC"},
+        },
+    }
 
-    print("Post-processing completed.")
+    headers = {
+        "content-type": "application/json",
+        "origin": "https://www.imdb.com",
+        "referer": "https://www.imdb.com/fr/chart/moviemeter/",
+        "user-agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+        ),
+        "accept-language": "fr-FR,fr;q=0.9,en;q=0.8",
+    }
 
-    # Fermer correctement le JSON
-    limited_content += '\n  ]\n}'
+    response = requests.post(
+        "https://api.graphql.imdb.com/", headers=headers, json=payload, timeout=30
+    )
+    response.raise_for_status()
+    data = response.json()
+    edges = data.get("data", {}).get("chartTitles", {}).get("edges", [])
 
-    print("JSON parsing completed.")
+    results = []
+    for edge in edges:
+        if not isinstance(edge, dict):
+            continue
 
-    # Créer le répertoire s'il n'existe pas
-    os.makedirs('public/json', exist_ok=True)
+        node = edge.get("node", {}) or {}
+        title_text = node.get("titleText", {}).get("text") if isinstance(node.get("titleText"), dict) else None
+        release_year = node.get("releaseYear", {}).get("year") if isinstance(node.get("releaseYear"), dict) else None
+        poster = node.get("primaryImage", {}).get("url") if isinstance(node.get("primaryImage"), dict) else None
+        title_id = node.get("id")
 
-    # Sauvegarder dans le fichier temporaire
-    temp_file = 'public/json/scrapedMoviesTemp.json'
-    
-    print("Creating temporary scraping file...")
-    with open(temp_file, 'w', encoding='utf-8') as f:
-        f.write(limited_content)
+        if not title_id or not title_text:
+            continue
 
-    print("Temporary file created successfully.")
-    print("SCRAPING_COMPLETE")  # Signal pour le serveur
-    print("Done!")
+        results.append({
+            "id": title_id,
+            "name": title_text,
+            "year": release_year,
+            "poster": poster,
+            "url": f"https://www.imdb.com/title/{title_id}/",
+            "rank": edge.get("currentRank"),
+        })
 
-except Exception as e:
-    print(f"Error during scraping: {e}")
-    sys.exit(1)
+    return {"result_count": len(results), "results": results}
+
+
+def main() -> int:
+    try:
+        movies = fetch_moviemeter_movies(LIMIT)
+    except Exception as exc:  # Print any errors that occur
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 1
+
+    OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
+    OUTPUT_FILE.write_text(json.dumps(movies, indent=2, ensure_ascii=False), encoding="utf-8")
+
+    print(f"Wrote {movies['result_count']} movies to {OUTPUT_FILE}")
+    print("SCRAPING_COMPLETE")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

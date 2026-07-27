@@ -1,7 +1,7 @@
-Ajouter les fichiers .jpg ici avec le même nom que le film.
+Add .jpg files here with the same name as the movie.
 
-Exemple:
+Example:
 ```
-Film: Inception.mp4
+Movie: Inception.mp4
 Image: Inception.jpg
 ```

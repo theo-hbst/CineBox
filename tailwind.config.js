@@ -1,4 +1,3 @@
-// filepath: /c:/Users/theoh/MovieShare/tailwind.config.js
 const defaultTheme = require('tailwindcss/defaultTheme');
 
 module.exports = {
