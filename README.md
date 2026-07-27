@@ -1,4 +1,4 @@
-href="https://github.com/TheRedmc-Off/CineBox/releases">
+<a href="https://github.com/TheRedmc-Off/CineBox/releases">
 <img alt="Latest GitHub release" src="https://img.shields.io/github/release/TheRedmc-Off/CineBox.svg?style=tokyonight" />
 </a>
 <a href="https://github.com/TheRedmc-Off/CineBox/issues">
