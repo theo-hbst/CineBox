@@ -1,3 +1,12 @@
+href="https://github.com/TheRedmc-Off/CineBox/releases">
+<img alt="Latest GitHub release" src="https://img.shields.io/github/release/TheRedmc-Off/CineBox.svg?style=tokyonight" />
+</a>
+<a href="https://github.com/TheRedmc-Off/CineBox/issues">
+<img src="https://img.shields.io/github/issues-raw/TheRedmc-Off/CineBox.svg?style=tokyonight&logo=github&logoColor=white"
+alt="GitHub issues">
+ </a>
+<a href=https://github.com/TheRedmc-Off/CineBox/pulse><img src=https://img.shields.io/github/repo-size/TheRedmc-Off/CineBox?style=tokyonight&logo=GitHub&logoColor=white&color=ff8f00></a>
+
 # CineBox
 
 CineBox is a self-hosted media server built for one purpose: let your family browse, watch, and manage the movies and shows on your own machine, without handing that job to a third-party streaming app. It scrapes trending titles from IMDb, comes with a file manager, a torrent client, and an admin panel for managing accounts: all wrapped in a dashboard you run yourself.
