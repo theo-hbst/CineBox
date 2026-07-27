@@ -39,6 +39,8 @@ pip install -r public/python/requirements.txt
 node server.js
 ```
 
+Can be used on a Windows-operated machine with the same dependencies ('aria2c.exe' included)
+
 By default the server runs on port `8080` and listens on all network interfaces. Restrict access before exposing it to your network:
 
 ```bash
