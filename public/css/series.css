@@ -1,8 +1,3 @@
-body {
-    background-color: #121212;
-    color: #ffffff;
-    font-family: Arial, sans-serif;
-}
 .series-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr); /* Change to 2 columns */
@@ -36,6 +31,11 @@ body {
     position: absolute; /* Ajouter position absolute */
     bottom: -30px; /* Placer le texte en bas */
     width: 100%;
+    color: #111827;
+}
+
+.dark .episode-title {
+    color: #ffffff;
 }
 .fullscreen-video {
     display: none;
@@ -68,9 +68,13 @@ body {
     background-color: #DC2626;
 }
 .folder-title {
-    color: #ffffff; /* Add color for file names */
+    color: #111827; /* Add color for file names */
     cursor: pointer;
     text-align: left; /* Remettre le texte à gauche */
+}
+
+.dark .folder-title {
+    color: #ffffff;
 }
 .folder-item {
     display: block; /* Mettre les dossiers sur des lignes différentes */

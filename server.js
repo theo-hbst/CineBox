@@ -663,6 +663,13 @@ app.get('/api/users/:username', (req, res) => {
   // without a valid session, (2) any attempt to look up ANOTHER user's
   // profile (unless admin) - this closes the account enumeration found
   // by the idor.py script.
+
+  // No caching: some mobile browsers cache GET JSON responses aggressively
+  // by default. Without this, a stale cached darkMode value could keep
+  // getting served and silently reset the toggle/theme every time the
+  // Profile page is visited, even after the preference was saved.
+  res.setHeader('Cache-Control', 'no-store');
+
   if (!argv.noid) {
     if (!req.session) {
       return res.status(401).json({ error: 'Authentication required.' });

@@ -7,15 +7,6 @@ alt="GitHub issues">
  </a>
 <a href=https://github.com/theo-hbst/CineBox/pulse><img src=https://img.shields.io/github/repo-size/theo-hbst/CineBox?style=tokyonight&logo=GitHub&logoColor=white&color=ff8f00></a>
 
-# TODO
-- [ ] Fix affichage du mode mobile (logo Cinebox)
-- [ ] Couleur adaptative de certains textes mobile
-- [ ] Couleur adaptative burger button mobile
-- [ ] Régler problème de Profile qui reset couleur en light mode quand on va sur la page
-- [ ] Couleur adaptative textes pc
-- [ ] Créer release
-- [ ] Merge branches
-
 # CineBox
 
 CineBox is a self-hosted media server built for one purpose: let your family browse, watch, and manage the movies and shows on your own machine, without handing that job to a third-party streaming app. It scrapes trending titles from IMDb, comes with a file manager, a torrent client and an admin panel for managing accounts, all wrapped in a dashboard you run yourself.
@@ -35,6 +26,8 @@ It started as a personal project to give my family an easy way to watch what was
 ### THIS IS NOT A PIRACY TOOL, I STRONGLY CONDEMN PIRACY AND I WILL NOT BE RESPONSIBLE FOR ANY COMPLICATIONS YOU MAY ENCOUNTER DOING PIRACY!
 
 ## Installation
+
+### Local installation
 
 Requires **Node.js 18+**, **Python 3.8+**, and **aria2** (used for torrent downloads).
 
@@ -58,6 +51,22 @@ By default the server runs on port `8080` and listens on all network interfaces.
 node server.js --localhost -p 8080        # only 127.0.0.1
 node server.js --allowlist -p 8080        # only IPs in public/json/allowlist.json
 ```
+
+### Docker
+
+Build the image:
+
+```bash
+docker build -t cinebox .
+```
+
+Run it:
+
+```bash
+docker run -d --name cinebox -p 8080:8080 cinebox
+```
+
+CineBox is now running on [http://localhost:8080](http://localhost:8080).
 
 ## CLI Flags
 
@@ -155,3 +164,12 @@ I built CineBox as a personal project after finishing high school, mostly to lea
 ## License
 
 MIT
+
+# TODO
+- [ ] ALL - Fix adaptive color in some page's JS
+- [ ] ALL - Test docker image
+- [ ] MOBILE - Move the burger menu to its right height (align with app logo)
+- [ ] MOBILE - Fix home page selected while not being hovered/selected
+
+- [ ] REL - Merge branchs
+- [ ] REL - Publish first release

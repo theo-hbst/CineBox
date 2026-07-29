@@ -5,7 +5,8 @@
       "admin": true,
       "avatarUrl": null,
       "passwordSalt": "5981653975f250090d3c411e40af942d",
-      "passwordHash": "145f66803988e90e7804699f1ab717dca3b763dbd14e8f4f312dce775bbc4d5764df1d65cf62cb8b5823a2d1449290c499c38373deac1f5a7ca039c5420116b3"
+      "passwordHash": "145f66803988e90e7804699f1ab717dca3b763dbd14e8f4f312dce775bbc4d5764df1d65cf62cb8b5823a2d1449290c499c38373deac1f5a7ca039c5420116b3",
+      "darkMode": false
     }
   ]
 }

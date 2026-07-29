@@ -230,7 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const response = await fetch(`/api/users/${encodeURIComponent(currentUsername)}`);
+            const response = await fetch(`/api/users/${encodeURIComponent(currentUsername)}`, { cache: 'no-store' });
             if (!response.ok) {
                 return;
             }
