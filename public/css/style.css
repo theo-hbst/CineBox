@@ -586,9 +586,17 @@ video {
   inset: 0px;
 }
 
+.m-5{
+  margin: 1.25rem;
+}
+
 .mx-auto{
   margin-left: auto;
   margin-right: auto;
+}
+
+.\!mb-0{
+  margin-bottom: 0px !important;
 }
 
 .mb-12{
@@ -750,6 +758,10 @@ video {
 
 .justify-center{
   justify-content: center;
+}
+
+.justify-between{
+  justify-content: space-between;
 }
 
 .gap-3{
@@ -1043,6 +1055,11 @@ video {
 
 .tracking-wide{
   letter-spacing: 0.025em;
+}
+
+.text-black{
+  --tw-text-opacity: 1;
+  color: rgb(0 0 0 / var(--tw-text-opacity, 1));
 }
 
 .text-gray-400\/70{

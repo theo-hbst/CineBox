@@ -159,17 +159,17 @@ It has no indexer, no tracker, and ships with no media of its own. You're respon
 
 ## About This Project
 
-I built CineBox as a personal project after finishing high school, mostly to learn by doing. Along the way, I used AI assistance (Claude) to help implement some features and to review and fix parts of the code, especially around security, since that's an area I'm still learning. I've tried to understand and test everything that went in rather than just copy-pasting, but if you spot something that could be done better, I'd genuinely appreciate a PR or an issue explaining why.
+I built CineBox as a personal project after finishing high school, mostly to learn by doing. I used AI (Claude, Gemini and Ornith (local llm)) to help implement some features, review and fix parts of the code especially around security, since that's an area I'm still learning. I've tried to understand and test everything that went in rather than just copy-pasting, but if you spot something that could be done better, I would genuinely appreciate a PR or an issue explaining why.
 
 ## License
 
 MIT
 
 # TODO
-- [ ] ALL - Fix adaptive color in some page's JS
-- [ ] ALL - Test docker image
-- [ ] MOBILE - Move the burger menu to its right height (align with app logo)
-- [ ] MOBILE - Fix home page selected while not being hovered/selected
 
-- [ ] REL - Merge branchs
-- [ ] REL - Publish first release
+- [ ] ALL - Test docker image
+- [ ] ALL - Fix adaptive color in Movies, Series, File manager, Torrent and Profile (maybe JS)
+- [ ] ALL - UI goes light mode (default) when going to Profile
+- [ ] MOBILE - Contact and Profile pages disappear of the sidebar when going to Settings
+- [ ] MOBILE - Move the burger menu to its right height (align with app logo)
+- [ ] MOBILE - Fix Home selected while not being hovered/selected
