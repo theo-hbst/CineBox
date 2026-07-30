@@ -12,7 +12,7 @@ import requests
 ROOT = Path(__file__).resolve().parent.parent.parent
 OUTPUT_FILE = ROOT / "public" / "json" / "scrapedMoviesTemp.json"
 
-LIMIT = 24  # 24 premiers films (ajustable)
+LIMIT = 24  # 24 first movies
 
 
 def fetch_moviemeter_movies(limit: int = LIMIT) -> dict:
@@ -85,7 +85,7 @@ def fetch_moviemeter_movies(limit: int = LIMIT) -> dict:
 def main() -> int:
     try:
         movies = fetch_moviemeter_movies(LIMIT)
-    except Exception as exc:  # Print any errors that occur
+    except Exception as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1
 

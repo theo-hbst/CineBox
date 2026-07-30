@@ -1,17 +1,17 @@
-<a href="https://github.com/TheRedmc-Off/CineBox/releases">
-<img alt="Latest GitHub release" src="https://img.shields.io/github/release/TheRedmc-Off/CineBox.svg?style=tokyonight" />
+<a href="https://github.com/theo-hbst/CineBox/releases">
+<img alt="Latest GitHub release" src="https://img.shields.io/github/release/theo-hbst/CineBox.svg?style=tokyonight" />
 </a>
-<a href="https://github.com/TheRedmc-Off/CineBox/issues">
-<img src="https://img.shields.io/github/issues-raw/TheRedmc-Off/CineBox.svg?style=tokyonight&logo=github&logoColor=white"
+<a href="https://github.com/theo-hbst/CineBox/issues">
+<img src="https://img.shields.io/github/issues-raw/theo-hbst/CineBox.svg?style=tokyonight&logo=github&logoColor=white"
 alt="GitHub issues">
  </a>
-<a href=https://github.com/TheRedmc-Off/CineBox/pulse><img src=https://img.shields.io/github/repo-size/TheRedmc-Off/CineBox?style=tokyonight&logo=GitHub&logoColor=white&color=ff8f00></a>
+<a href=https://github.com/theo-hbst/CineBox/pulse><img src=https://img.shields.io/github/repo-size/theo-hbst/CineBox?style=tokyonight&logo=GitHub&logoColor=white&color=ff8f00></a>
 
 # CineBox
 
-CineBox is a self-hosted media server built for one purpose: let your family browse, watch, and manage the movies and shows on your own machine, without handing that job to a third-party streaming app. It scrapes trending titles from IMDb, comes with a file manager, a torrent client, and an admin panel for managing accounts: all wrapped in a dashboard you run yourself.
+CineBox is a self-hosted media server built for one purpose: let your family browse, watch, and manage the movies and shows on your own machine, without handing that job to a third-party streaming app. It scrapes trending titles from IMDb, comes with a file manager, a torrent client and an admin panel for managing accounts, all wrapped in a dashboard you run yourself.
 
-It started as a personal project to give my family an easy way to watch what was already on our home server, and grew from there into something worth sharing.
+It started as a personal project to give my family an easy way to watch what was already on our home server, but I figured out it would be nice to share it.
 
 ## Features
 
@@ -23,23 +23,27 @@ It started as a personal project to give my family an easy way to watch what was
 - 🌗 Per-user dark mode
 - 🛡️ CSRF protection, path-traversal protection, clickjacking protection, rate limiting
 
+### THIS IS NOT A PIRACY TOOL, I STRONGLY CONDEMN PIRACY AND I WILL NOT BE RESPONSIBLE FOR ANY COMPLICATIONS YOU MAY ENCOUNTER DOING PIRACY!
 
 ## Installation
+
+### Local installation
 
 Requires **Node.js 18+**, **Python 3.8+**, and **aria2** (used for torrent downloads).
 
 ```bash
 # Debian/Ubuntu
-sudo apt install aria2
-
-git clone https://github.com/<your-username>/CineBox.git
+sudo apt update
+sudo apt install aria2 -y
+git clone https://github.com/theo.hbst/CineBox.git
 cd CineBox
+pip install requests
 npm install
-pip install -r public/python/requirements.txt
 node server.js
 ```
 
-Can be used on a Windows-operated machine with the same dependencies ('aria2c.exe' included)
+You can also run CineBox on a Windows machine, as a windows executable for aria2 is included.
+Node and Python (with 'requests' package) are needed.
 
 By default the server runs on port `8080` and listens on all network interfaces. Restrict access before exposing it to your network:
 
@@ -47,6 +51,22 @@ By default the server runs on port `8080` and listens on all network interfaces.
 node server.js --localhost -p 8080        # only 127.0.0.1
 node server.js --allowlist -p 8080        # only IPs in public/json/allowlist.json
 ```
+
+### Docker
+
+Build the image:
+
+```bash
+docker build -t cinebox .
+```
+
+Run it:
+
+```bash
+docker run -d --name cinebox -p 8080:8080 cinebox
+```
+
+CineBox is now running on [http://localhost:8080](http://localhost:8080).
 
 ## CLI Flags
 
@@ -58,11 +78,21 @@ node server.js --allowlist -p 8080        # only IPs in public/json/allowlist.js
 | `--noid` | | Bypasses authentication, IP restrictions, and logout entirely (local testing only) |
 | `--help` | `-h` | Show CLI usage |
 
+## Server's integrated commands
+
+| Command  | Description |
+|---|---|
+| `stop` | Stops the server completely |
+| `restart` | Stops the server, then restarts it with the same arguments |
+| `append <IP>` | Appends an IP to the allowlist's json: `public/json/allowlist.json` |
+| `clear` | Clears the console |
+| `help` | Displays all of the commands listed above with their descriptions |
+
 ## First Login
 
-CineBox ships with a seed account: **`admin` / `admin`**. Log in, then immediately change the password and/or create your own admin account from the Server page.
+CineBox comes with a default account: **`admin` / `admin`**. Log in then immediately change the password and/or create your own admin account from the Server page.
 
-Passwords are hashed with `crypto.scrypt` (Node's native, memory-hard KDF). If you ever hand-edit `users.json`, a plaintext `"password"` field is auto-hashed the next time the server starts.
+Passwords are hashed with `crypto.scrypt` (Node's native KDF). If you ever hand-edit `users.json`, a plaintext `"password"` field is auto-hashed the next time the server starts.
 
 ## Usage
 
@@ -70,7 +100,7 @@ Passwords are hashed with `crypto.scrypt` (Node's native, memory-hard KDF). If y
 - **File Manager** - browse, rename, move, delete, and download files under `Media/`
 - **Torrent** - upload a `.torrent` file and watch its progress live
 - **Profile** - change your username, upload an avatar, toggle dark mode
-- **Server** *(admin only)* - stop/restart the server, manage the IP allowlist, and manage users (create, rename, delete, promote/demote admin, reset passwords). A safeguard prevents removing or deleting the last remaining admin.
+- **Server** *(admin only)* - stop/restart the server, manage the IP allowlist, and manage users (create, rename, delete, promote/demote admin, reset passwords). The server prevents removing or deleting the last remaining admin.
 
 ## Security
 
@@ -121,12 +151,25 @@ CineBox/
 
 ## Legal & Scope
 
-CineBox is a personal media library manager, in the same spirit as Jellyfin, Plex, or Sonarr not a piracy tool. It has no indexer, no tracker, and ships with no media of its own. You're responsible for the legality of any content you add to your own library.
+CineBox is a personal media library manager, in the same spirit as Jellyfin, Plex, or Sonarr. 
+
+### AGAIN, THIS IS NOT A PIRACY TOOL: I STRONGLY CONDEMN PIRACY AND I WILL NOT BE RESPONSIBLE FOR ANY COMPLICATIONS YOU MAY ENCOUNTER DOING PIRACY!
+
+It has no indexer, no tracker, and ships with no media of its own. You're responsible for the legality of any content you add to your own library.
 
 ## About This Project
 
-I built CineBox as a personal project after finishing high school, mostly to learn by doing. Along the way, I used AI assistance (Claude) to help implement some features and to review and fix parts of the code, especially around security, since that's an area I'm still learning. I've tried to understand and test everything that went in rather than just copy-pasting, but if you spot something that could be done better, I'd genuinely appreciate a PR or an issue explaining why.
+I built CineBox as a personal project after finishing high school, mostly to learn by doing. I used AI (Claude, Gemini and Ornith (local llm)) to help implement some features, review and fix parts of the code especially around security, since that's an area I'm still learning. I've tried to understand and test everything that went in rather than just copy-pasting, but if you spot something that could be done better, I would genuinely appreciate a PR or an issue explaining why.
 
 ## License
 
 MIT
+
+# TODO
+
+- [ ] ALL - Test docker image
+- [ ] ALL - Fix adaptive color in Movies, Series, File manager, Torrent and Profile (maybe JS)
+- [ ] ALL - UI goes light mode (default) when going to Profile
+- [ ] MOBILE - Contact and Profile pages disappear of the sidebar when going to Settings
+- [ ] MOBILE - Move the burger menu to its right height (align with app logo)
+- [ ] MOBILE - Fix Home selected while not being hovered/selected

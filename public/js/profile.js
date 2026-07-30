@@ -230,7 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const response = await fetch(`/api/users/${encodeURIComponent(currentUsername)}`);
+            const response = await fetch(`/api/users/${encodeURIComponent(currentUsername)}`, { cache: 'no-store' });
             if (!response.ok) {
                 return;
             }
@@ -297,11 +297,7 @@ document.addEventListener('DOMContentLoaded', () => {
         darkModeToggle.addEventListener('change', async () => {
             const nextValue = darkModeToggle.checked;
             applyDarkMode(nextValue); // instant visual feedback
-
-            if (currentUsername === 'Guest') {
-                return;
-            }
-
+            
             try {
                 const response = await csrfFetch('/api/users/darkmode', {
                     method: 'POST',

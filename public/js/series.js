@@ -45,7 +45,6 @@ document.addEventListener('DOMContentLoaded', () => {
           if (data.length === 0) {
             // Vertical and horizontal centering
             const msg = document.createElement('div');
-            msg.style.color = '#fff';
             msg.style.display = 'flex';
             msg.style.justifyContent = 'center';
             msg.style.alignItems = 'center';
@@ -113,7 +112,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
           // If data isn't an array, show an error message
           const msg = document.createElement('div');
-          msg.style.color = '#fff';
           msg.style.display = 'flex';
           msg.style.justifyContent = 'center';
           msg.style.alignItems = 'center';
@@ -140,6 +138,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
   fetchSeriesFiles(currentPath);
 
-  // Auto-refresh every 15s
-  setInterval(() => fetchSeriesFiles(currentPath), 15000);
+  setInterval(() => fetchSeriesFiles(currentPath), 15000); // Auto-refresh every 15s
 });

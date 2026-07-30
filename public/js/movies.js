@@ -10,7 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
             movieGrid.innerHTML = '';
             if (!movies || movies.length === 0) {
                 const msg = document.createElement('div');
-                msg.style.color = '#fff';
                 msg.style.display = 'flex';
                 msg.style.justifyContent = 'center';
                 msg.style.alignItems = 'center';
