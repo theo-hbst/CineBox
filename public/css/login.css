@@ -7,7 +7,7 @@ body {
 }
 
 body {
-    background: url(/public/imgs/landscape.jpg) no-repeat center;
+    background: url(/public/imgs/background.jpg) no-repeat center;
     background-size: cover;
 }
 
@@ -28,6 +28,7 @@ body {
 label {
     font-size: 12px;
     font-weight: 700;
+    color: #717171;
 }
 
 input {
@@ -41,10 +42,11 @@ input {
     font-weight: 300;
     padding: 0;
     background: transparent;
+    color: white;
 }
 
-input:focus {
-    border-bottom-color: black;
+input:focus{
+    border-bottom-color: white;
 }
 
 input.error {
@@ -71,7 +73,7 @@ button {
 }
 
 button:hover {
-    color: #000000;
+    color: white;
 }
 
 h1,
@@ -83,6 +85,7 @@ p {
     top: 50%;
     margin: -140px 0 0 -150px;
     padding: 0;
+    color: white;
 }
 
 h1 {

@@ -1,8 +1,5 @@
 node_modules
-node_modules.deps
 .git
-.github
 *.md
 LICENSE
 README.md
-Media/*

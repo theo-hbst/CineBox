@@ -167,9 +167,5 @@ MIT
 
 # TODO
 
-- [ ] ALL - Test docker image
-- [ ] ALL - Fix adaptive color in Movies, Series, File manager, Torrent and Profile (maybe JS)
-- [ ] ALL - UI goes light mode (default) when going to Profile
-- [ ] MOBILE - Contact and Profile pages disappear of the sidebar when going to Settings
+- [ ] ALL - Fix adaptive color in Movies and Series in JS (No series/movies text)
 - [ ] MOBILE - Move the burger menu to its right height (align with app logo)
-- [ ] MOBILE - Fix Home selected while not being hovered/selected

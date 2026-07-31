@@ -1008,10 +1008,12 @@ app.delete('/api/admin/users/:username', requireAdmin, verifyCsrf, (req, res) =>
 
 app.post('/server/stop', requireAdmin, verifyCsrf, (req, res) => {
   console.log(colors.red('Stopping server...'));
-  server.close(() => {
-    process.exit(0);
-  });
+      server.close(() => {
+        process.exit(0);
+      });
+  res.send('Server stopping');
 });
+    
 
 app.post('/server/restart', requireAdmin, verifyCsrf, (req, res) => {
   console.log(colors.yellow('Restarting server...'));
@@ -1044,53 +1046,72 @@ app.post('/server/append', requireAdmin, verifyCsrf, (req, res) => {
   }
 });
 
-
 // Runs the Python scraper and swaps in the temp file once complete.
-// Reused both by POST /scraper (user-triggered) and on server startup
-// (so there's no need to click "Refresh" every time it launches).
+// Reused both by POST /scraper (user-triggered) and on server startup.
 function runScraper(onComplete) {
-  const pythonExecutable = process.env.PYTHON_EXECUTABLE || process.env.PYTHON || 'python';
-  const pythonProcessScraper = spawn(pythonExecutable, ['public/python/scraper.py']);
+  function getPythonExecutable() {
+    if (process.env.PYTHON_EXECUTABLE) return process.env.PYTHON_EXECUTABLE;
+    if (process.env.PYTHON) return process.env.PYTHON;
 
-  console.log(colors.yellow('Python engine started'));
+    return process.platform === 'win32' ? 'python' : 'python3';
+  }
 
+  const pythonExecutable = getPythonExecutable();
+
+  const scriptPath = path.join(__dirname, 'public', 'python', 'scraper.py');
+
+  console.log(colors.yellow('Starting Python scraper...'));
+  console.log(colors.yellow(`Python: ${pythonExecutable}`));
+  console.log(colors.yellow(`Script: ${scriptPath}`));
+
+  const pythonProcessScraper = spawn(
+    pythonExecutable,
+    [scriptPath],
+    {
+      cwd: __dirname,
+      shell: false
+    }
+  );
+
+  pythonProcessScraper.on('error', (err) => {
+    console.error(colors.red(`Unable to start Python: ${err.message}`));
+    if (onComplete) onComplete(1);
+  });
+
+  console.log(colors.green('Python process launched'));
+
+  pythonProcessScraper.stdout.setEncoding('utf8');
   pythonProcessScraper.stdout.on('data', (data) => {
-    const output = data.toString();
-    console.log(colors.yellow(`stdout: ${output}`));
+    console.log(colors.yellow(data.trim()));
 
-    // Check whether scraping is complete
-    if (output.includes('SCRAPING_COMPLETE')) {
-      // Swap the files
-      const oldFile = 'public/json/scrapedMovies.json';
-      const tempFile = 'public/json/scrapedMoviesTemp.json';
+    if (data.includes('SCRAPING_COMPLETE')) {
+      const oldFile = path.join(__dirname, 'public', 'json', 'scrapedMovies.json');
+      const tempFile = path.join(__dirname, 'public', 'json', 'scrapedMoviesTemp.json');
 
       try {
-        // Supprimer l'ancien fichier s'il existe
         if (fs.existsSync(oldFile)) {
           fs.unlinkSync(oldFile);
-          console.log(colors.green('Old scraping file removed'));
         }
 
-        // Renommer le fichier temporaire
         if (fs.existsSync(tempFile)) {
           fs.renameSync(tempFile, oldFile);
-          console.log(colors.green('Scraping file updated successfully'));
         }
-      } catch (error) {
-        console.error(colors.red(`Error swapping files: ${error}`));
+
+        console.log(colors.green('Scraping file updated successfully.'));
+      } catch (err) {
+        console.error(colors.red(`Error swapping files: ${err.message}`));
       }
     }
   });
 
+  pythonProcessScraper.stderr.setEncoding('utf8');
   pythonProcessScraper.stderr.on('data', (data) => {
-    console.error(colors.red(`stderr: ${data}`));
+    console.error(colors.red(data.trim()));
   });
 
   pythonProcessScraper.on('close', (code) => {
-    console.log(colors.yellow(`child process exited with code ${code}`));
-    if (onComplete) {
-      onComplete(code);
-    }
+    console.log(colors.yellow(`Python exited with code ${code}`));
+    if (onComplete) onComplete(code);
   });
 }
 
@@ -1100,17 +1121,13 @@ app.post('/scraper', verifyCsrf, (req, res) => {
   });
 });
 
-// New endpoint to check whether scraping is complete
 app.get('/scraper/status', (req, res) => {
-  const oldFile = 'public/json/scrapedMovies.json';
-  const tempFile = 'public/json/scrapedMoviesTemp.json';
-
-  const isScrapingInProgress = fs.existsSync(tempFile);
-  const hasData = fs.existsSync(oldFile);
+  const oldFile = path.join(__dirname, 'public', 'json', 'scrapedMovies.json');
+  const tempFile = path.join(__dirname, 'public', 'json', 'scrapedMoviesTemp.json');
 
   res.json({
-    scrapingInProgress: isScrapingInProgress,
-    hasData: hasData,
+    scrapingInProgress: fs.existsSync(tempFile),
+    hasData: fs.existsSync(oldFile),
     timestamp: Date.now()
   });
 });

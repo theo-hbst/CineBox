@@ -136,7 +136,7 @@
             <span>Files</span>
           </a>
 
-          <div class="mt-8 text-gray-400/70 font-medium uppercase">General</div>
+          <div class="mt-8 text-gray-400/70 font-medium uppercase">Management</div>
           <a
             class="flex items-center space-x-2 py-1 group hover:border-r-4 hover:border-r-red-600 hover:font-semibold dark:hover:text-white"
             href="profile.html"
@@ -282,7 +282,7 @@
               <span>Files</span>
             </a>
 
-            <div class="mt-8 text-gray-400/70 font-medium uppercase">General</div>
+            <div class="mt-8 text-gray-400/70 font-medium uppercase">Management</div>
             <a
               class="flex items-center space-x-2 py-1 group hover:border-r-4 hover:border-r-red-600 hover:font-semibold dark:hover:text-white"
               href="profile.html"
@@ -325,14 +325,14 @@
 
         <section>
           <div class="scraper_results">
-            <h1 class="moviesText">#24 Top Movies</h1>
+            <h1 class="moviesText text-gray-900 dark:text-white">#24 Top Movies</h1>
             <div id="loading-indicator" style="display:none;color:#fff;text-align:center;padding:20px;">
               🔄 Updating movies...
             </div>
+            <div id="movies" class="movies-grid"></div>
             <div class="mb-4 flex justify-center">
               <button id="refresh-scraper" class="refresh-scraper-btn">Refresh scraping</button>
             </div>
-            <div id="movies" class="movies-grid"></div>
           </div>
 
           <script>
@@ -352,7 +352,7 @@
                 moviesContainer.innerHTML = '';
 
                 if (movies.length === 0) {
-                  moviesContainer.innerHTML = '<p style="color:#fff;text-align:center;">Aucun film disponible pour le moment.</p>';
+                  moviesContainer.innerHTML = '<p style="color:#fff;text-align:center;">No movie available pour le moment.</p>';
                   return;
                 }
 

@@ -173,13 +173,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    document.addEventListener('DOMContentLoaded', function () {
+        const darkModeToggle = document.getElementById('dark-mode-toggle');
+
+        const isDark = localStorage.getItem('darkMode') === '1';
+
+        document.documentElement.classList.toggle('dark', isDark);
+        document.documentElement.classList.toggle('light', !isDark);
+
+        if (darkModeToggle) {
+            darkModeToggle.checked = isDark;
+            darkModeToggle.addEventListener('change', function () {
+                applyDarkMode(darkModeToggle.checked);
+            });
+        }
+    });
+
     function applyDarkMode(isDark) {
         document.documentElement.classList.toggle('dark', isDark);
         document.documentElement.classList.toggle('light', !isDark);
         localStorage.setItem('darkMode', isDark ? '1' : '0');
-        if (darkModeToggle) {
-            darkModeToggle.checked = isDark;
-        }
     }
 
     async function loadProfile() {
@@ -246,11 +259,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     changeAvatarButton.textContent = 'Change profile picture';
                 }
             }
-            // Keep the toggle and the theme in sync with what's stored server-side
-            // (covers first login on a new device where localStorage is empty).
-            applyDarkMode(!!payload.darkMode);
+
         } catch (error) {
             console.error(error);
+            setProfileStatus('Error while loading profile.', true);
         }
     }
 
@@ -317,4 +329,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     loadProfile();
-});
+})

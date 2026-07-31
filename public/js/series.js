@@ -50,6 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
             msg.style.alignItems = 'center';
             msg.style.height = '60vh';
             msg.style.fontSize = '1.3rem';
+            msg.style.color = '#1f2937 dark:text-gray-300'; // Tailwind's gray-800 for light mode and gray-300 for dark mode
             msg.textContent = path === 'series'
               ? 'No series available.'
               : 'No episodes available.';
