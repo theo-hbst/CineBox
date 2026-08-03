@@ -177,6 +177,9 @@ aside {
     cursor: pointer;
     z-index: 70; /* Above the mobile sidebar */
     pointer-events: auto;
+    display: inline-flex;
+    align-items: center;
+    line-height: 0;
 }
 
 .hamburger input {
@@ -246,6 +249,14 @@ aside {
 
 .dark .mobile-sidebar {
     background-color: #18181b;
+}
+
+.adaptive-page-text {
+    color: #111827;
+}
+
+.dark .adaptive-page-text {
+    color: #d1d5db;
 }
 
 .mobile-sidebar.open {

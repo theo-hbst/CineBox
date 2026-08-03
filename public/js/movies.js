@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
             movieGrid.innerHTML = '';
             if (!movies || movies.length === 0) {
                 const msg = document.createElement('div');
+                msg.classList.add('adaptive-page-text');
                 msg.style.display = 'flex';
                 msg.style.justifyContent = 'center';
                 msg.style.alignItems = 'center';
@@ -31,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const movieThumbnail = document.createElement('img');
                 const movieTitle = document.createElement('div');
-                movieTitle.classList.add('movie-title');
+                movieTitle.classList.add('movie-title', 'adaptive-page-text');
                 movieTitle.textContent = movie.name.replace(/_/g, ' ').replace(/\.[^/.]+$/, '');
 
                 if (movie.thumbnail) {

@@ -45,12 +45,12 @@ document.addEventListener('DOMContentLoaded', () => {
           if (data.length === 0) {
             // Vertical and horizontal centering
             const msg = document.createElement('div');
+            msg.classList.add('adaptive-page-text');
             msg.style.display = 'flex';
             msg.style.justifyContent = 'center';
             msg.style.alignItems = 'center';
             msg.style.height = '60vh';
             msg.style.fontSize = '1.3rem';
-            msg.style.color = '#1f2937 dark:text-gray-300'; // Tailwind's gray-800 for light mode and gray-300 for dark mode
             msg.textContent = path === 'series'
               ? 'No series available.'
               : 'No episodes available.';
@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (item.isDirectory) {
               const fileName = document.createElement('div');
-              fileName.className = 'folder-title';
+              fileName.className = 'folder-title adaptive-page-text';
               fileName.textContent = item.name.replace(/_/g, ' ').replace(/\.[^/.]+$/, '');
               fileName.addEventListener('click', () => {
                 currentPath = path ? `${path}/${item.name}` : item.name;
@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
               });
 
               const fileName = document.createElement('div');
-              fileName.className = 'episode-title';
+              fileName.className = 'episode-title adaptive-page-text';
               fileName.textContent = item.name.replace(/_/g, ' ').replace(/\.[^/.]+$/, '');
               fileItem.appendChild(fileName); // Add the caption below the media
 
@@ -113,6 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
           // If data isn't an array, show an error message
           const msg = document.createElement('div');
+          msg.classList.add('adaptive-page-text');
           msg.style.display = 'flex';
           msg.style.justifyContent = 'center';
           msg.style.alignItems = 'center';

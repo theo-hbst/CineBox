@@ -1,12 +1,3 @@
-<a href="https://github.com/theo-hbst/CineBox/releases">
-<img alt="Latest GitHub release" src="https://img.shields.io/github/release/theo-hbst/CineBox.svg?style=tokyonight" />
-</a>
-<a href="https://github.com/theo-hbst/CineBox/issues">
-<img src="https://img.shields.io/github/issues-raw/theo-hbst/CineBox.svg?style=tokyonight&logo=github&logoColor=white"
-alt="GitHub issues">
- </a>
-<a href=https://github.com/theo-hbst/CineBox/pulse><img src=https://img.shields.io/github/repo-size/theo-hbst/CineBox?style=tokyonight&logo=GitHub&logoColor=white&color=ff8f00></a>
-
 # CineBox
 
 CineBox is a self-hosted media server built for one purpose: let your family browse, watch, and manage the movies and shows on your own machine, without handing that job to a third-party streaming app. It scrapes trending titles from IMDb, comes with a file manager, a torrent client and an admin panel for managing accounts, all wrapped in a dashboard you run yourself.
@@ -164,8 +155,3 @@ I built CineBox as a personal project after finishing high school, mostly to lea
 ## License
 
 MIT
-
-# TODO
-
-- [ ] ALL - Fix adaptive color in Movies and Series in JS (No series/movies text)
-- [ ] MOBILE - Move the burger menu to its right height (align with app logo)
